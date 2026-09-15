@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Baza danych + SELECT — ściąga</title>
+<style>
+  :root{
+    --tlo:#f4f6fb;
+    --karta:#ffffff;
+    --granat:#1e3a8a;
+    --niebieski:#2563eb;
+    --jasny:#dbeafe;
+    --zielony:#15803d;
+    --jasnyziel:#dcfce7;
+    --pomarancz:#c2410c;
+    --jasnypom:#ffedd5;
+    --fiolet:#6d28d9;
+    --jasnyfiol:#ede9fe;
+    --szary:#475569;
+    --linia:#cbd5e1;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; padding:28px 18px 60px;
+    background:var(--tlo); color:#0f172a;
+    font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;
+    font-size:17px; line-height:1.5;
+  }
+  .strona{max-width:1180px;margin:0 auto}
+
+  h1{
+    font-size:2.6rem; text-align:center; margin:0 0 6px;
+    color:var(--granat); letter-spacing:-.5px;
+  }
+  .podtytul{text-align:center;color:var(--szary);font-size:1.15rem;margin:0 0 34px}
+
+  h2{
+    font-size:1.9rem; color:var(--granat);
+    margin:46px 0 6px; display:flex; align-items:center; gap:12px;
+  }
+  h2 .nr{
+    background:var(--granat); color:#fff; border-radius:12px;
+    width:46px; height:46px; display:inline-flex; align-items:center;
+    justify-content:center; font-size:1.4rem; flex:none;
+  }
+  h3{font-size:1.3rem;color:var(--granat);margin:26px 0 10px}
+  .wstep{color:var(--szary);margin:0 0 18px;font-size:1.05rem}
+
+  /* ---------- DIAGRAM WARSTWOWY ---------- */
+  .warstwa{
+    border:3px solid var(--linia); border-radius:18px;
+    padding:14px 16px 18px; margin-top:14px; background:var(--karta);
+  }
+  .warstwa > .etykieta{
+    display:inline-block; font-weight:700; font-size:1.05rem;
+    padding:5px 14px; border-radius:999px; margin-bottom:12px;
+  }
+  .warstwa .opis{font-size:.95rem;color:var(--szary);margin:0 0 12px}
+
+  .w-user{border-color:var(--szary);background:#fff}
+  .w-user .etykieta{background:#e2e8f0;color:#1e293b}
+
+  .w-pma{border-color:var(--pomarancz);background:#fffaf5}
+  .w-pma .etykieta{background:var(--jasnypom);color:var(--pomarancz)}
+
+  .w-szbd{border-color:var(--fiolet);background:#faf8ff}
+  .w-szbd .etykieta{background:var(--jasnyfiol);color:var(--fiolet)}
+
+  .w-baza{border-color:var(--niebieski);background:#f5f9ff}
+  .w-baza .etykieta{background:var(--jasny);color:var(--granat)}
+
+  .strzalka{
+    text-align:center;font-size:2rem;color:var(--szary);
+    line-height:1;margin:6px 0;
+  }
+
+  .tabelki{display:flex;gap:14px;flex-wrap:wrap}
+  .tabelka{
+    flex:1 1 220px; min-width:200px;
+    border:2px solid var(--zielony); border-radius:12px;
+    background:var(--karta); overflow:hidden;
+  }
+  .tabelka .glowka{
+    background:var(--jasnyziel); color:#14532d; font-weight:700;
+    padding:8px 12px; font-size:1.05rem; border-bottom:2px solid var(--zielony);
+  }
+  .tabelka ul{margin:0;padding:10px 12px 12px 28px;font-size:.95rem}
+  .tabelka li{margin:2px 0}
+  .tabelka .pk{color:var(--pomarancz);font-weight:700}
+  .tabelka .fk{color:var(--fiolet);font-weight:700}
+  .tabelka .typ{color:var(--szary);font-size:.85rem}
+
+  .legenda{
+    display:flex;gap:18px;flex-wrap:wrap;margin-top:14px;
+    font-size:.95rem;color:var(--szary)
+  }
+  .legenda span b{color:#0f172a}
+
+  /* ---------- ZBLIŻENIE NA TABELĘ ---------- */
+  .zoom{
+    background:var(--karta);border:2px solid var(--linia);
+    border-radius:16px;padding:18px;margin-top:16px;overflow-x:auto;
+  }
+  table.dane{border-collapse:collapse;width:100%;font-size:1rem;min-width:560px}
+  table.dane th,table.dane td{border:1px solid var(--linia);padding:8px 12px;text-align:left}
+  table.dane thead th{background:var(--jasny);color:var(--granat);font-weight:700}
+  table.dane tbody tr:nth-child(even){background:#f8fafc}
+  table.dane .kol-pk{background:var(--jasnypom)}
+  table.dane .kol-fk{background:var(--jasnyfiol)}
+  table.dane .wiersz-hi td{background:var(--jasnyziel)!important;font-weight:600}
+  table.dane .null{color:#94a3b8;font-style:italic}
+
+  .opisy{display:flex;gap:14px;flex-wrap:wrap;margin-top:16px}
+  .opis-karta{
+    flex:1 1 230px;border-left:6px solid var(--niebieski);
+    background:var(--karta);border-radius:0 10px 10px 0;padding:10px 14px;
+    box-shadow:0 1px 3px rgba(15,23,42,.08);
+  }
+  .opis-karta b{display:block;font-size:1.05rem;color:var(--granat)}
+  .opis-karta span{font-size:.95rem;color:var(--szary)}
+  .o-pk{border-left-color:var(--pomarancz)} .o-pk b{color:var(--pomarancz)}
+  .o-fk{border-left-color:var(--fiolet)} .o-fk b{color:var(--fiolet)}
+  .o-rek{border-left-color:var(--zielony)} .o-rek b{color:var(--zielony)}
+
+  /* ---------- ŚCIĄGA SQL ---------- */
+  .szkielet{
+    background:#0f172a;color:#e2e8f0;border-radius:14px;padding:6px 20px 14px;
+    overflow-x:auto;
+  }
+  .szkielet .wiersz{
+    display:grid; grid-template-columns:230px 1fr; gap:18px;
+    align-items:baseline; padding:9px 0;
+    border-bottom:1px dashed #334155;
+  }
+  .szkielet .wiersz:last-child{border-bottom:none}
+  .szkielet .kw{
+    font-family:"SF Mono",Menlo,Consolas,monospace;
+    font-size:1.15rem; font-weight:700; color:#7dd3fc; white-space:nowrap;
+  }
+  .szkielet .kw .opc{color:#64748b;font-size:.8rem;font-weight:400;display:block}
+  .szkielet .cm{font-size:1rem;color:#cbd5e1}
+  .szkielet .cm b{color:#fff}
+  .szkielet .cm em{color:#94a3b8;font-style:normal;font-size:.9rem;display:block}
+
+  .siatka{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:16px;margin-top:16px}
+  .karta{
+    background:var(--karta);border:2px solid var(--linia);border-radius:14px;
+    padding:14px 16px 16px;
+  }
+  .karta h4{
+    margin:0 0 4px;font-size:1.15rem;color:var(--granat);
+    display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  }
+  .karta h4 code{
+    background:var(--jasny);color:var(--granat);padding:2px 8px;border-radius:6px;
+    font-size:1rem;
+  }
+  .karta p.cel{margin:0 0 8px;font-size:.95rem;color:var(--szary)}
+  pre{
+    margin:0;background:#f1f5f9;border-left:4px solid var(--niebieski);
+    border-radius:0 8px 8px 0;padding:10px 12px;overflow-x:auto;
+    font-family:"SF Mono",Menlo,Consolas,monospace;font-size:.95rem;line-height:1.6;
+  }
+  pre + pre{margin-top:8px}
+  code{font-family:"SF Mono",Menlo,Consolas,monospace}
+  .wynik{
+    margin-top:8px;font-size:.9rem;color:var(--zielony);
+    background:var(--jasnyziel);border-radius:8px;padding:6px 10px;
+  }
+  .wynik b{color:#14532d}
+
+  .uwaga{
+    margin-top:26px;background:#fff7ed;border:2px solid var(--pomarancz);
+    border-radius:14px;padding:14px 18px;
+  }
+  .uwaga h3{margin:0 0 8px;color:var(--pomarancz)}
+  .uwaga ul{margin:0;padding-left:22px}
+  .uwaga li{margin:6px 0}
+  .uwaga code{background:#ffedd5;padding:1px 6px;border-radius:5px}
+
+  .stop{
+    margin-top:26px;text-align:center;background:#fee2e2;border:2px dashed #dc2626;
+    border-radius:14px;padding:12px 18px;color:#991b1b;font-size:1.05rem;
+  }
+  .stop b{font-size:1.15rem}
+
+  @media print{
+    body{background:#fff;padding:0;font-size:11.5pt}
+    .strona{max-width:none}
+    h1{font-size:22pt}
+    h2{font-size:15pt;margin-top:18pt;page-break-after:avoid}
+    h3{page-break-after:avoid}
+    .karta,.tabelka,.zoom,.uwaga,.warstwa,.opis-karta{
+      break-inside:avoid;page-break-inside:avoid;box-shadow:none;
+    }
+    .szkielet{background:#fff;color:#000;border:1.5pt solid #000;padding:4pt 10pt}
+    .szkielet .wiersz{border-bottom:.5pt dashed #999;grid-template-columns:130pt 1fr;gap:10pt}
+    .szkielet .kw{color:#000;text-decoration:underline;font-size:12pt}
+    .szkielet .kw .opc{color:#666;text-decoration:none}
+    .szkielet .cm{color:#000;font-size:10.5pt}
+    .szkielet .cm b{color:#000}
+    .szkielet .cm em{color:#555}
+    .przelam{page-break-before:always}
+    .siatka{grid-template-columns:1fr 1fr}
+  }
+</style>
+</head>
+<body>
+<div class="strona">
+
+  <h1>Z czego składa się baza danych?</h1>
+  <p class="podtytul">…i co potrafię z niej wyciągnąć za pomocą <code>SELECT</code> — ściąga na zajęcia</p>
+
+  <!-- ================= CZĘŚĆ 1: DIAGRAM ================= -->
+  <h2><span class="nr">1</span> Mapa: od przeglądarki do pojedynczej komórki</h2>
+  <p class="wstep">Czytaj od góry do dołu — każde pudełko siedzi w środku poprzedniego.</p>
+
+  <div class="warstwa w-user">
+    <span class="etykieta">👤 UŻYTKOWNIK (Ty) + przeglądarka</span>
+    <p class="opis">Klikam i piszę zapytania. Nie dotykam plików bazy bezpośrednio — zawsze przez program.</p>
+  </div>
+
+  <div class="strzalka">↓</div>
+
+  <div class="warstwa w-pma">
+    <span class="etykieta">🖥️ phpMyAdmin — <code>http://localhost/phpmyadmin</code></span>
+    <p class="opis">
+      Strona WWW, czyli <b>narzędzie do klikania</b>. Sama nic nie pamięta — tłumaczy moje kliknięcia
+      i zapytania SQL na polecenia dla serwera i pokazuje odpowiedź w tabelce.
+      (W XAMPP muszą działać <b>Apache</b> = strona i <b>MySQL</b> = serwer bazy.)
+    </p>
+
+    <div class="warstwa w-szbd">
+      <span class="etykieta">⚙️ SZBD — System Zarządzania Bazą Danych (MySQL / MariaDB)</span>
+      <p class="opis">
+        Właściwy <b>program-serwer</b>. To on przechowuje dane, wykonuje <code>SELECT</code>, pilnuje
+        typów danych, kluczy i uprawnień użytkowników. Na jednym SZBD może stać wiele baz.
+      </p>
+
+      <div class="warstwa w-baza">
+        <span class="etykieta">🗄️ BAZA DANYCH <code>szkola</code></span>
+        <p class="opis">
+          Nazwany pojemnik na powiązane ze sobą <b>tabele</b> (obok mogą stać inne bazy: <code>world</code>, <code>sklep</code>…).
+        </p>
+
+        <div class="tabelki">
+          <div class="tabelka">
+            <div class="glowka">📋 uczniowie</div>
+            <ul>
+              <li><span class="pk">🔑 id</span> <span class="typ">INT</span></li>
+              <li>imie <span class="typ">VARCHAR(20)</span></li>
+              <li>nazwisko <span class="typ">VARCHAR(30)</span></li>
+              <li><span class="fk">🔗 id_klasy</span> <span class="typ">INT</span></li>
+              <li>data_urodzenia <span class="typ">DATE</span></li>
+              <li>email <span class="typ">VARCHAR(50)</span></li>
+              <li>srednia <span class="typ">DECIMAL(3,2)</span></li>
+            </ul>
+          </div>
+          <div class="tabelka">
+            <div class="glowka">📋 klasy</div>
+            <ul>
+              <li><span class="pk">🔑 id</span> <span class="typ">INT</span></li>
+              <li>nazwa <span class="typ">CHAR(4)</span></li>
+              <li>wychowawca <span class="typ">VARCHAR(40)</span></li>
+              <li>profil <span class="typ">ENUM(...)</span></li>
+              <li>sala <span class="typ">SMALLINT</span></li>
+            </ul>
+          </div>
+          <div class="tabelka">
+            <div class="glowka">📋 przedmioty</div>
+            <ul>
+              <li><span class="pk">🔑 id</span> <span class="typ">INT</span></li>
+              <li>nazwa <span class="typ">VARCHAR(40)</span></li>
+              <li>godziny_tyg <span class="typ">TINYINT</span></li>
+              <li>rozszerzony <span class="typ">CHAR(1)</span></li>
+            </ul>
+          </div>
+          <div class="tabelka">
+            <div class="glowka">📋 oceny</div>
+            <ul>
+              <li><span class="pk">🔑 id</span> <span class="typ">INT</span></li>
+              <li><span class="fk">🔗 id_ucznia</span> <span class="typ">INT</span></li>
+              <li><span class="fk">🔗 id_przedmiotu</span> <span class="typ">INT</span></li>
+              <li>ocena <span class="typ">DECIMAL(2,1)</span></li>
+              <li>waga <span class="typ">TINYINT</span></li>
+              <li>data_wystawienia <span class="typ">DATE</span></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="legenda">
+          <span><b class="pk" style="color:#c2410c">🔑 klucz główny (PK)</b> — unikalny numer wiersza</span>
+          <span><b class="fk" style="color:#6d28d9">🔗 klucz obcy (FK)</b> — wskazuje wiersz z innej tabeli</span>
+          <span><b>szary napis</b> — typ danych kolumny</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h3>🔍 Zbliżenie: co widzę w jednej tabeli (<code>uczniowie</code>)</h3>
+  <div class="zoom">
+    <table class="dane">
+      <thead>
+        <tr>
+          <th class="kol-pk">🔑 id</th><th>imie</th><th>nazwisko</th>
+          <th class="kol-fk">🔗 id_klasy</th><th>data_urodzenia</th><th>email</th><th>srednia</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="kol-pk">1</td><td>Anna</td><td>Kowalska</td><td class="kol-fk">3</td><td>2008-04-12</td><td>a.kowalska@zsp.pl</td><td>4.35</td></tr>
+        <tr class="wiersz-hi"><td class="kol-pk">2</td><td>Bartosz</td><td>Nowak</td><td class="kol-fk">1</td><td>2008-11-30</td><td class="null">NULL</td><td>3.80</td></tr>
+        <tr><td class="kol-pk">3</td><td>Celina</td><td>Wójcik</td><td class="kol-fk">3</td><td>2009-01-05</td><td>c.wojcik@zsp.pl</td><td>5.10</td></tr>
+        <tr><td class="kol-pk">4</td><td>Damian</td><td>Zieliński</td><td class="kol-fk">2</td><td>2007-07-22</td><td>d.zielinski@zsp.pl</td><td>2.95</td></tr>
+      </tbody>
+    </table>
+
+    <div class="opisy">
+      <div class="opis-karta"><b>Kolumna (atrybut)</b><span>Pionowo. Jedna informacja o każdym uczniu, np. <code>nazwisko</code>. Ma jedną nazwę i jeden typ danych.</span></div>
+      <div class="opis-karta o-rek"><b>Rekord (wiersz)</b><span>Poziomo — jeden zielony pasek = jeden konkretny uczeń, np. Bartosz Nowak.</span></div>
+      <div class="opis-karta"><b>Pole (komórka)</b><span>Przecięcie wiersza i kolumny — jedna pojedyncza wartość, np. <code>4.35</code>.</span></div>
+      <div class="opis-karta o-pk"><b>Klucz główny (PK)</b><span><code>id</code> — nigdy się nie powtarza i nie jest pusty. Dzięki niemu każdy wiersz da się jednoznacznie wskazać.</span></div>
+      <div class="opis-karta o-fk"><b>Klucz obcy (FK)</b><span><code>id_klasy = 3</code> odsyła do wiersza o <code>id = 3</code> w tabeli <code>klasy</code>. To jest cała „relacja”.</span></div>
+      <div class="opis-karta"><b>Typ danych</b><span>Umowa, co wolno wpisać: <code>INT</code> (całkowite), <code>DECIMAL(3,2)</code> (z przecinkiem), <code>VARCHAR(30)</code> (tekst do 30 znaków), <code>DATE</code>, <code>ENUM</code> (tylko z listy).</span></div>
+      <div class="opis-karta"><b>NULL</b><span>Brak wartości — <i>nie</i> zero i <i>nie</i> pusty tekst. Bartosz nie podał maila.</span></div>
+      <div class="opis-karta"><b>Struktura vs dane</b><span>W phpMyAdmin: zakładka <b>Struktura</b> = jakie są kolumny i typy, <b>Przeglądaj</b> = jakie wiersze są w środku.</span></div>
+    </div>
+  </div>
+
+  <!-- ================= CZĘŚĆ 2: SELECT ================= -->
+  <h2 class="przelam"><span class="nr">2</span> SELECT — jak wyciągnąć dane</h2>
+  <p class="wstep">Wszystkie przykłady na bazie <code>szkola</code> z góry strony. Zapytanie kończymy średnikiem <code>;</code></p>
+
+  <div class="szkielet">
+    <div class="wiersz">
+      <span class="kw">SELECT</span>
+      <span class="cm"><b>Które kolumny</b> chcę zobaczyć?<em><code>*</code> = wszystkie kolumny</em></span>
+    </div>
+    <div class="wiersz">
+      <span class="kw">FROM</span>
+      <span class="cm"><b>Z której tabeli</b> je wziąć?<em>np. <code>uczniowie</code></em></span>
+    </div>
+    <div class="wiersz">
+      <span class="kw">WHERE<span class="opc">nieobowiązkowe</span></span>
+      <span class="cm"><b>Które wiersze</b> mnie interesują?<em>filtr — reszta wierszy w ogóle się nie pokaże</em></span>
+    </div>
+    <div class="wiersz">
+      <span class="kw">ORDER BY<span class="opc">nieobowiązkowe</span></span>
+      <span class="cm"><b>Jak posortować</b> wynik?<em><code>ASC</code> rosnąco (domyślnie) · <code>DESC</code> malejąco</em></span>
+    </div>
+    <div class="wiersz">
+      <span class="kw">LIMIT<span class="opc">nieobowiązkowe</span></span>
+      <span class="cm"><b>Ile wierszy</b> pokazać?<em>np. <code>LIMIT 10</code> — pierwsze dziesięć</em></span>
+    </div>
+    <div class="wiersz">
+      <span class="kw">;</span>
+      <span class="cm"><b>Koniec zapytania.</b><em>Średnik zawsze na samym końcu</em></span>
+    </div>
+  </div>
+  <p class="wstep" style="margin-top:10px">
+    Kolejność tych linijek jest sztywna — <code>WHERE</code> nigdy przed <code>FROM</code>, <code>LIMIT</code> zawsze na końcu.
+  </p>
+
+  <h3>A. Wybieranie kolumn</h3>
+  <div class="siatka">
+
+    <div class="karta">
+      <h4><code>*</code> — wszystko</h4>
+      <p class="cel">Cała tabela: wszystkie kolumny i wszystkie wiersze.</p>
+<pre>SELECT * FROM uczniowie;</pre>
+      <div class="wynik"><b>Efekt:</b> lista wszystkich uczniów ze wszystkimi danymi.</div>
+    </div>
+
+    <div class="karta">
+      <h4>Wybrane kolumny</h4>
+      <p class="cel">Mniej śmieci na ekranie — biorę tylko to, co potrzebne.</p>
+<pre>SELECT imie, nazwisko, srednia
+FROM uczniowie;</pre>
+      <div class="wynik"><b>Efekt:</b> 3 kolumny, wciąż wszyscy uczniowie.</div>
+    </div>
+
+    <div class="karta">
+      <h4><code>AS</code> — własny nagłówek</h4>
+      <p class="cel">Zmieniam podpis kolumny w wyniku (dane w tabeli zostają bez zmian).</p>
+<pre>SELECT nazwisko AS Uczen,
+       srednia  AS "Średnia ocen"
+FROM uczniowie;</pre>
+      <div class="wynik"><b>Efekt:</b> nagłówki „Uczen” i „Średnia ocen”.</div>
+    </div>
+
+    <div class="karta">
+      <h4><code>DISTINCT</code> — bez powtórek</h4>
+      <p class="cel">Pokaż każdą wartość tylko raz.</p>
+<pre>SELECT DISTINCT profil FROM klasy;</pre>
+      <div class="wynik"><b>Efekt:</b> lista profili, np. informatyczny, logistyczny, mechaniczny.</div>
+    </div>
+
+    <div class="karta">
+      <h4>Obliczenia w SELECT</h4>
+      <p class="cel">Kolumna, której nie ma w tabeli — liczona na bieżąco.</p>
+<pre>SELECT nazwa,
+       godziny_tyg * 32 AS GodzinyWRoku
+FROM przedmioty;</pre>
+      <div class="wynik"><b>Efekt:</b> wolno używać <code>+ - * /</code> na kolumnach liczbowych.</div>
+    </div>
+
+    <div class="karta">
+      <h4>Funkcje na wartościach</h4>
+      <p class="cel">Przerabiam to, co wychodzi w wyniku.</p>
+<pre>SELECT UPPER(nazwisko)              AS Nazwisko,
+       LENGTH(nazwisko)             AS DlugoscZnakow,
+       CONCAT(imie,' ',nazwisko)    AS PelneImie,
+       ROUND(srednia, 1)            AS SredniaZaokr
+FROM uczniowie;</pre>
+      <div class="wynik"><b>Efekt:</b> KOWALSKA · 8 · „Anna Kowalska” · 4.4</div>
+    </div>
+
+  </div>
+
+  <h3>B. <code>WHERE</code> — filtrowanie wierszy</h3>
+  <div class="siatka">
+
+    <div class="karta">
+      <h4>Porównania <code>= &lt;&gt; &gt; &lt; &gt;= &lt;=</code></h4>
+      <p class="cel">Najprostszy warunek. Tekst i daty <b>w apostrofach</b>, liczby bez.</p>
+<pre>SELECT * FROM uczniowie
+WHERE srednia &gt; 4.0;</pre>
+<pre>SELECT * FROM klasy
+WHERE nazwa = '2TI';</pre>
+<pre>SELECT * FROM oceny
+WHERE ocena &lt;&gt; 1;   -- różne od 1</pre>
+    </div>
+
+    <div class="karta">
+      <h4><code>AND</code> — oba warunki naraz</h4>
+      <p class="cel">Zawężam wynik: musi się zgadzać wszystko.</p>
+<pre>SELECT imie, nazwisko, srednia
+FROM uczniowie
+WHERE id_klasy = 3
+  AND srednia &gt;= 4.0;</pre>
+      <div class="wynik"><b>Efekt:</b> tylko dobrzy uczniowie z klasy nr 3.</div>
+    </div>
+
+    <div class="karta">
+      <h4><code>OR</code> / <code>NOT</code></h4>
+      <p class="cel"><code>OR</code> — wystarczy jeden warunek. <code>NOT</code> — odwrotność.</p>
+<pre>SELECT * FROM przedmioty
+WHERE nazwa = 'Matematyka'
+   OR nazwa = 'Fizyka';</pre>
+<pre>SELECT * FROM klasy
+WHERE NOT profil = 'informatyczny';</pre>
+      <div class="wynik"><b>Uwaga:</b> mieszając AND z OR używaj nawiasów — <code>WHERE a=1 AND (b=2 OR b=3)</code>.</div>
+    </div>
+
+    <div class="karta">
+      <h4><code>BETWEEN</code> — przedział</h4>
+      <p class="cel">Od… do…, <b>razem z krańcami</b>. Działa też na datach.</p>
+<pre>SELECT nazwisko, srednia FROM uczniowie
+WHERE srednia BETWEEN 3.0 AND 4.0;</pre>
+<pre>SELECT * FROM oceny
+WHERE data_wystawienia
+      BETWEEN '2026-09-01' AND '2026-09-30';</pre>
+      <div class="wynik"><b>To samo co:</b> <code>srednia &gt;= 3.0 AND srednia &lt;= 4.0</code></div>
+    </div>
+
+    <div class="karta">
+      <h4><code>IN</code> — lista wartości</h4>
+      <p class="cel">Skrót zamiast wielu <code>OR</code>.</p>
+<pre>SELECT * FROM uczniowie
+WHERE id_klasy IN (1, 3, 5);</pre>
+<pre>SELECT * FROM przedmioty
+WHERE nazwa IN ('Matematyka','Fizyka','Chemia');</pre>
+      <div class="wynik"><b>Odwrotnie:</b> <code>NOT IN (1,3,5)</code> — wszyscy poza tymi klasami.</div>
+    </div>
+
+    <div class="karta">
+      <h4><code>LIKE</code> — wzorzec tekstu</h4>
+      <p class="cel"><b><code>%</code></b> = dowolny ciąg znaków (także pusty) · <b><code>_</code></b> = dokładnie 1 znak</p>
+<pre>WHERE nazwisko LIKE 'K%'    -- zaczyna się na K
+WHERE nazwisko LIKE '%ski'  -- kończy na "ski"
+WHERE nazwisko LIKE '%ow%'  -- zawiera "ow"
+WHERE imie     LIKE '_a%'   -- 2. litera to a
+WHERE email    LIKE '%@zsp.pl'</pre>
+      <div class="wynik"><b>Efekt:</b> Kowalska · Zieliński · Kowalska/Nowak · Bartosz/Damian</div>
+    </div>
+
+    <div class="karta">
+      <h4><code>IS NULL</code> — puste pola</h4>
+      <p class="cel">NULL to brak wartości — nie równa się niczemu, nawet sobie.</p>
+<pre>SELECT imie, nazwisko FROM uczniowie
+WHERE email IS NULL;</pre>
+<pre>SELECT * FROM uczniowie
+WHERE email IS NOT NULL;</pre>
+      <div class="wynik"><b>Nigdy:</b> <code>WHERE email = NULL</code> — zwróci 0 wierszy!</div>
+    </div>
+
+    <div class="karta">
+      <h4>Warunek na wyniku obliczenia</h4>
+      <p class="cel">W <code>WHERE</code> powtarzam całe wyrażenie — alias z <code>SELECT</code> tu <b>nie działa</b>.</p>
+<pre>SELECT nazwa, godziny_tyg * 32 AS GodzinyWRoku
+FROM przedmioty
+WHERE godziny_tyg * 32 &gt; 100;</pre>
+      <div class="wynik"><b>Dlaczego:</b> <code>WHERE</code> wykonuje się <i>przed</i> <code>SELECT</code>.</div>
+    </div>
+
+  </div>
+
+  <h3>C. Porządkowanie wyniku</h3>
+  <div class="siatka">
+
+    <div class="karta">
+      <h4><code>ORDER BY</code> — sortowanie</h4>
+      <p class="cel"><code>ASC</code> = rosnąco (domyślnie), <code>DESC</code> = malejąco.</p>
+<pre>SELECT nazwisko, srednia FROM uczniowie
+ORDER BY srednia DESC;</pre>
+<pre>-- najpierw klasa, w klasie alfabetycznie
+SELECT * FROM uczniowie
+ORDER BY id_klasy ASC, nazwisko ASC;</pre>
+    </div>
+
+    <div class="karta">
+      <h4><code>LIMIT</code> / <code>OFFSET</code></h4>
+      <p class="cel">Ile wierszy pokazać i od którego zacząć.</p>
+<pre>-- 5 najlepszych średnich
+SELECT nazwisko, srednia FROM uczniowie
+ORDER BY srednia DESC
+LIMIT 5;</pre>
+<pre>-- wiersze 11–20 (pomiń 10)
+SELECT nazwisko FROM uczniowie
+ORDER BY nazwisko
+LIMIT 10 OFFSET 10;</pre>
+    </div>
+
+    <div class="karta">
+      <h4>Wszystko razem</h4>
+      <p class="cel">Kolejność klauzul jest sztywna — nie wolno zamieniać miejscami.</p>
+<pre>SELECT CONCAT(imie,' ',nazwisko) AS Uczen,
+       srednia AS Srednia
+FROM uczniowie
+WHERE id_klasy IN (1,3)
+  AND srednia &gt;= 3.5
+  AND email IS NOT NULL
+ORDER BY srednia DESC
+LIMIT 10;</pre>
+      <div class="wynik"><b>Czytaj jak zdanie:</b> pokaż… z tabeli… tylko te… posortowane… pierwsze 10.</div>
+    </div>
+
+  </div>
+
+  <div class="uwaga">
+    <h3>⚠️ Najczęstsze błędy</h3>
+    <ul>
+      <li><code>WHERE email = NULL</code> → ma być <code>IS NULL</code>.</li>
+      <li>Tekst bez apostrofów: <code>WHERE nazwa = 2TI</code> → ma być <code>'2TI'</code>.</li>
+      <li>Ułamki z przecinkiem: <code>srednia &gt; 4,5</code> → w SQL zawsze kropka: <code>4.5</code>.</li>
+      <li>Zła kolejność: <code>ORDER BY</code> zawsze <b>po</b> <code>WHERE</code>, <code>LIMIT</code> na samym końcu.</li>
+      <li>Alias w <code>WHERE</code>: <code>WHERE GodzinyWRoku &gt; 100</code> nie zadziała — powtórz wzór.</li>
+      <li>Brak średnika <code>;</code> albo literówka w nazwie kolumny — MySQL pokaże czerwony błąd, przeczytaj go!</li>
+    </ul>
+  </div>
+
+  <div class="stop">
+    <b>Tu się na razie zatrzymujemy.</b><br>
+    Zliczanie i podsumowywanie danych (<code>COUNT</code>, <code>SUM</code>, <code>AVG</code>) — na kolejnych lekcjach.
+  </div>
+
+</div>
+</body>
+</html>
