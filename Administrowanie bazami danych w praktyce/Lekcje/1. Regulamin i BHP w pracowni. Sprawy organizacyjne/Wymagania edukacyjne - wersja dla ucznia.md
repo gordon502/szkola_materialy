@@ -8,21 +8,23 @@ Pracujemy w XAMPP (MySQL/MariaDB) i phpMyAdmin — tym samym środowisku, w któ
 
 | Ocena | Wymagania |
 |---|---|
-| **2** | Wykonujesz zadania krok po kroku, według instrukcji lub z pomocą nauczyciela: uruchamiasz XAMPP i phpMyAdmin, tworzysz prostą tabelę z danymi, piszesz pojedyncze polecenia SQL, robisz kopię zapasową — i rozumiesz, co robią użyte polecenia. |
-| **3** | Samodzielnie wykonujesz pojedyncze, typowe zadania: budujesz prostą bazę wg gotowego projektu, piszesz SELECT z WHERE, ORDER BY i JOIN, modyfikujesz i usuwasz dane, tworzysz prosty formularz, zakładasz użytkownika bazy i nadajesz mu uprawnienia, wykonujesz kopię zapasową i przywracasz z niej dane. |
+| **2** | Wykonujesz zadania krok po kroku, według instrukcji lub z pomocą nauczyciela: uruchamiasz XAMPP i phpMyAdmin, tworzysz prostą tabelę z danymi, piszesz pojedyncze polecenia SQL — i rozumiesz, co robią użyte polecenia. |
+| **3** | Samodzielnie wykonujesz pojedyncze, typowe zadania: budujesz prostą bazę wg gotowego projektu, piszesz SELECT z WHERE, ORDER BY i JOIN, modyfikujesz i usuwasz dane, tworzysz prosty formularz. |
 | **4** | Samodzielnie prowadzisz cały proces: od diagramu E/R do działającej bazy (typy danych, klucze główne i obce, więzy, liczebności relacji), importujesz i eksportujesz dane, stosujesz funkcje agregujące, podzapytania i złączenia wielotabelowe, tworzysz skrypt SQL zakładający całą bazę jednym uruchomieniem. Pomocniczo: formularze i raporty w wybranym SZBD. |
-| **5** | Sprawnie, samodzielnie i w limicie czasu wykonujesz zadania na poziomie egzaminacyjnym INF.03: pełna administracja bazą — uprawnienia na poziomie bazy i tabel, praca wielu użytkowników, rozbudowa i modyfikacja struktury, kontrola spójności, kopie zapasowe i odtwarzanie, diagnozowanie i naprawa uszkodzonej bazy. |
+| **5** | Sprawnie, samodzielnie i w limicie czasu wykonujesz zadania na poziomie egzaminacyjnym INF.03 w zakresie zrealizowanego materiału: prowadzisz kompletny proces — od zaawansowanego diagramu E/R, przez implementację całej struktury jednym skryptem SQL, po zaawansowane zapytania (funkcje agregujące, podzapytania, złączenia wielotabelowe); zarządzasz bazą danych za pomocą poleceń SQL, programujesz skrypty automatyzujące tworzenie struktury bazy, publikujesz bazę danych w sieci. |
 | **6** | Spełniasz wymagania na 5 oraz wykonujesz indywidualny projekt wykraczający poza program (ustalony z nauczycielem) i omawiasz go na stanowisku komputerowym. Temat zgłaszasz najpóźniej miesiąc przed radą klasyfikacyjną, oddajesz i omawiasz najpóźniej tydzień przed nią. |
 | **1** | Nie spełniasz wymagań na ocenę 2. |
 
-Wymagania są kumulatywne — wyższa ocena obejmuje też wszystkie niższe.
+Wymagania są kumulatywne — wyższa ocena obejmuje też wszystkie niższe. Zagadnienia administracyjne (modyfikowanie struktury bazy danych, zarządzanie systemem bazy danych) realizujemy w następnym roku nauczania tego przedmiotu, a zaoszczędzony w tym roku czas przeznaczamy na powtórki i przygotowanie do egzaminu zawodowego.
 
 ## Jak liczona jest ocena za pracę?
 
-Wszystkie prace (sprawdziany, kartkówki, zadania przy komputerze) są punktowane. Ocena wynika z procentu punktów:
+**Sprawdziany, prace klasowe i testy** (zapowiadane prace kontrolne) są punktowane; ocena wynika z procentu punktów:
 
-- **część teoretyczna:** od 50% — 2, od 60% — 3, od 75% — 4, od 91% — 5, 100% — 6,
-- **zadania wykonywane na stanowisku komputerowym:** od **75% — 2**, od 81% — 3, od 88% — 4, od 95% — 5, 100% — 6 (progi jak na egzaminie CKE).
+- **część pisemna (teoria):** od 50% — 2, od 60% — 3, od 75% — 4, od 91% — 5, 100% — 6,
+- **test praktyczny przy komputerze w formule jak egzamin INF.03:** od **75% — 2**, od 81% — 3, od 88% — 4, od 95% — 5, 100% — 6 (progi jak na egzaminie CKE).
+
+**Kartkówki i zwykłe zadania wykonywane przy komputerze na lekcji** to oceny bieżące — nie obowiązują w nich progi egzaminacyjne. Ocena wynika z kryteriów, które nauczyciel podaje przed rozpoczęciem zadania (samodzielność, poprawność, poziom wykonania). Przy pisemnych kartkówkach nauczyciel może stosować progi jak dla części teoretycznej.
 
 Przy pracach praktycznych nauczyciel może zadać pytania kontrolne dotyczące wykonania.
 

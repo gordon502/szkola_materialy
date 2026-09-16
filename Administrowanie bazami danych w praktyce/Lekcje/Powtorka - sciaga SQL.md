@@ -18,7 +18,6 @@ SELECT kolumny, agregaty          -- 6
 FROM tabela                       -- 1
 WHERE warunek_na_wiersze          -- 2  (PRZED grupowaniem, nie zna aliasów!)
 GROUP BY kolumna_grupujaca        -- 3
-HAVING warunek_na_grupy           -- 4  (PO agregacji, zna aliasy)
 ORDER BY ... ASC|DESC             -- 7  (wielokluczowe: ORDER BY a, b DESC)
 LIMIT n OFFSET m;                 -- 8  (OFFSET 10 = pomiń 10 pierwszych)
 ```

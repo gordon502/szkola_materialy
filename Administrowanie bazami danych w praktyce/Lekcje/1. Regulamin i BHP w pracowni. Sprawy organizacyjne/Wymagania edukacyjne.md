@@ -3,7 +3,7 @@
 **Przedmiot:** Administrowanie bazami danych w praktyce
 **Zawód:** technik informatyk | **Klasa:** IV | **Kwalifikacja:** INF.03 | **Rok szkolny:** 2026/2027
 
-Nauczanie przedmiotu i ocenianie odbywa się zgodnie ze statutem szkoły (rozdział 9, § 75–97). Wymagania odnoszą się do efektów kształcenia INF.03.4.1–7 podstawy programowej kształcenia w zawodzie. Zajęcia prowadzone są w pracowni komputerowej, z wykorzystaniem pakietu XAMPP (MySQL/MariaDB) i phpMyAdmin — głównego środowiska pracy oraz egzaminu zawodowego — zgodnie z regulaminem pracowni oraz zasadami bezpiecznej pracy i ergonomii. Obok nich, w zależności od realizowanego materiału, mogą być wykorzystywane inne narzędzia programistyczne i konsolowe wskazane przez nauczyciela (np. klient wiersza poleceń MySQL/MariaDB, narzędzia do wirtualizacji, środowiska programistyczne, systemy pakietowe do pracy z bazami danych, np. MS Access lub LibreOffice Base). Podstawą oceniania jest praktyczna praca ucznia na stanowisku komputerowym, oceniana w formach wymienionych w części 2.
+Nauczanie przedmiotu i ocenianie odbywa się zgodnie ze statutem szkoły (rozdział 9, § 75–97). Wymagania odnoszą się do efektów kształcenia INF.03.4.1–6 podstawy programowej kształcenia w zawodzie (efekty INF.03.4.7 — modyfikowanie struktury bazy danych oraz zarządzanie systemem bazy danych — zostaną zrealizowane w kolejnym roku nauczania przedmiotu); czas z tego tytułu zyskany przeznaczono na systematyczne powtórki i przygotowanie do egzaminu zawodowego. Zajęcia prowadzone są w pracowni komputerowej, z wykorzystaniem pakietu XAMPP (MySQL/MariaDB) i phpMyAdmin — głównego środowiska pracy oraz egzaminu zawodowego — zgodnie z regulaminem pracowni oraz zasadami bezpiecznej pracy i ergonomii. Obok nich, w zależności od realizowanego materiału, mogą być wykorzystywane inne narzędzia programistyczne i konsolowe wskazane przez nauczyciela (np. klient wiersza poleceń MySQL/MariaDB, narzędzia do wirtualizacji, środowiska programistyczne, systemy pakietowe do pracy z bazami danych, np. MS Access lub LibreOffice Base). Podstawą oceniania jest praktyczna praca ucznia na stanowisku komputerowym, oceniana w formach wymienionych w części 2.
 
 Dokument udostępniony uczniom na pierwszych zajęciach; zapoznanie się z nim uczniowie potwierdzają własnoręcznym podpisem na liście zapoznania, przechowywanej przez nauczyciela przedmiotu.
 
@@ -16,23 +16,23 @@ Wymagania mają charakter kumulacyjny — uczeń ubiegający się o wyższą oce
 Powyższe wymagania dotyczą **ocen klasyfikacyjnych** (śródrocznej i końcowej), które obejmują całość materiału nauczania. **Oceny bieżące** (kartkówki, odpowiedzi ustne, zadania na lekcji, prace domowe) sprawdzają opanowanie fragmentu materiału — przy ich ocenianiu stosuje się te same kryteria (samodzielność, poprawność, poziom wykonania) w zakresie tego fragmentu. Ocena z kartkówki lub pojedynczego zadania nie jest oceną klasyfikacyjną i sama nie przesądza o ocenie śródrocznej/końcowej — ocenę klasyfikacyjną ustala nauczyciel na podstawie wszystkich ocen bieżących, które łącznie obejmują całość wymagań (statut § 85).
 
 **Ocena dopuszczająca (2) — moduł: podstawy środowiska bazodanowego i języka SQL**
-*Zakres materiału:* instalacja, aktualizacja i uruchamianie pakietu XAMPP, obsługa phpMyAdmin, podstawowe pojęcia z dziedziny baz danych (baza danych, tabela, rekord, pole, klucz, relacja), pojedyncze polecenia SQL (SELECT, INSERT, UPDATE, DELETE), kopia zapasowa.
-*Umiejętności:* uczeń wykonuje zadania praktyczne **krok po kroku, według instrukcji lub z pomocą nauczyciela**: uruchamia i obsługuje XAMPP oraz phpMyAdmin, tworzy prostą tabelę i wprowadza do niej dane, wykonuje pojedyncze polecenia SQL, wykonuje kopię zapasową według podanej instrukcji. Rozpoznaje i poprawnie nazywa podstawowe pojęcia. Uczeń korzystający z pomocy lub instrukcji wykazuje przy tym **zrozumienie wykonywanych czynności — potrafi objaśnić cel i działanie użytych komend**.
+*Zakres materiału:* instalacja, aktualizacja i uruchamianie pakietu XAMPP, obsługa phpMyAdmin, podstawowe pojęcia z dziedziny baz danych (baza danych, tabela, rekord, pole, klucz, relacja), pojedyncze polecenia SQL (SELECT, INSERT, UPDATE, DELETE).
+*Umiejętności:* uczeń wykonuje zadania praktyczne **krok po kroku, według instrukcji lub z pomocą nauczyciela**: uruchamia i obsługuje XAMPP oraz phpMyAdmin, tworzy prostą tabelę i wprowadza do niej dane, wykonuje pojedyncze polecenia SQL. Rozpoznaje i poprawnie nazywa podstawowe pojęcia. Uczeń korzystający z pomocy lub instrukcji wykazuje przy tym **zrozumienie wykonywanych czynności — potrafi objaśnić cel i działanie użytych komend**.
 *Granica 2/3 — samodzielność: na ocenę 3 uczeń nie potrzebuje instrukcji krok po kroku ani pomocy nauczyciela.*
 
 **Ocena dostateczna (3) — moduł: relacyjna baza danych i podstawowe zapytania**
-*Zakres materiału:* prosta baza danych (tabele, klucze, relacje), relacyjny model danych i postaci normalne (1PN–3PN), zapytania SELECT z użyciem WHERE, ORDER BY i JOIN, modyfikacja i usuwanie danych, proste formularze do wprowadzania danych (w wybranym SZBD), użytkownicy bazy danych i uprawnienia, kopia zapasowa i przywracanie danych.
-*Umiejętności:* uczeń **samodzielnie wykonuje pojedyncze, typowe zadania** — o schematach omawianych i ćwiczonych na zajęciach: tworzy prostą bazę danych zgodnie z gotowym projektem; opisuje cechy relacyjnej bazy danych i rozpoznaje postaci normalne; pisze zapytania SQL z użyciem WHERE, ORDER BY i JOIN; modyfikuje i usuwa dane; tworzy prosty formularz do wprowadzania danych; tworzy użytkownika bazy danych i nadaje mu uprawnienia; wykonuje kopię zapasową i przywraca z niej dane. Zadania na tym poziomie nie wymagają łączenia wielu umiejętności w jeden proces ani elementów rozszerzonych.
+*Zakres materiału:* prosta baza danych (tabele, klucze, relacje), relacyjny model danych i postaci normalne (1PN–3PN), zapytania SELECT z użyciem WHERE, ORDER BY i JOIN, modyfikacja i usuwanie danych, proste formularze do wprowadzania danych (w wybranym SZBD).
+*Umiejętności:* uczeń **samodzielnie wykonuje pojedyncze, typowe zadania** — o schematach omawianych i ćwiczonych na zajęciach: tworzy prostą bazę danych zgodnie z gotowym projektem; opisuje cechy relacyjnej bazy danych i rozpoznaje postaci normalne; pisze zapytania SQL z użyciem WHERE, ORDER BY i JOIN; modyfikuje i usuwa dane; tworzy prosty formularz do wprowadzania danych. Zadania na tym poziomie nie wymagają łączenia wielu umiejętności w jeden proces ani elementów rozszerzonych.
 *Granica 3/4 — zakres: na ocenę 4 uczeń łączy umiejętności w kompletny proces i stosuje elementy rozszerzone.*
 
 **Ocena dobra (4) — moduł: projektowanie bazy danych (E/R) i implementacja w SQL**
 *Zakres materiału:* diagram E/R, typy danych, klucze główne i obce, więzy integralności, liczebności relacji, import i eksport danych, funkcje agregujące, podzapytania, złączenia wielotabelowe, skrypty SQL, pomocniczo formularze i raporty w wybranym SZBD (np. MS Access lub LibreOffice Base).
 *Umiejętności:* uczeń **samodzielnie realizuje kompletny proces** — od projektu do działającej bazy: tworzy bazę danych zgodnie z diagramem E/R (poprawny dobór typów danych, klucze główne i obce, więzy integralności, liczebności relacji), weryfikuje jej poprawność, importuje i eksportuje dane; stosuje funkcje agregujące, podzapytania i złączenia wielotabelowe; tworzy formularze do wprowadzania danych i ich modyfikowanie oraz raporty w bazie danych (w wybranym SZBD); tworzy skrypt SQL zakładający całą strukturę bazy jednym uruchomieniem.
-*Granica 4/5 — złożoność i warunki: na ocenę 5 zadanie ma poziom egzaminacyjny, jest wykonywane w ograniczonym czasie i obejmuje pełne administrowanie bazą.*
+*Granica 4/5 — złożoność i warunki: na ocenę 5 zadanie ma poziom egzaminacyjny, jest wykonywane w ograniczonym czasie i obejmuje kompletny proces — od projektu, przez automatyzowaną implementację, po zaawansowane zapytania.*
 
-**Ocena bardzo dobra (5) — moduł: zaawansowane administrowanie bazą danych (poziom egzaminacyjny INF.03)**
-*Zakres materiału:* zaawansowane zarządzanie uprawnieniami użytkowników (na poziomie bazy danych i tabel), rozbudowa i modyfikacja struktury bazy danych, kontrola spójności bazy danych, kopie zapasowe i odtwarzanie danych, import i eksport tabel, diagnozowanie i naprawa bazy danych, automatyzacja pracy skryptami.
-*Umiejętności:* uczeń sprawnie i samodzielnie, w ustalonym czasie i bez pomocy nauczyciela, wykonuje złożone zadania praktyczne na poziomie testu egzaminacyjnego INF.03: projektuje i implementuje bazę danych oraz w pełni nią administruje — zarządza uprawnieniami na poziomie bazy i tabel w środowisku wielu użytkowników, rozbudowuje i modyfikuje strukturę bazy (tabele, kolumny, relacje, więzy) oraz weryfikuje jej poprawność po każdej zmianie, kontroluje spójność bazy, wykonuje i weryfikuje kopie zapasowe, przywraca dane, **diagnozuje i naprawia uszkodzoną bazę danych**.
+**Ocena bardzo dobra (5) — moduł: zaawansowane projektowanie i programowanie baz danych (poziom egzaminacyjny INF.03)**
+*Zakres materiału:* wymagania ponadpodstawowe zrealizowanych działów programu: zaawansowane diagramy E/R, zaawansowane zapytania SQL, zarządzanie bazą danych za pomocą poleceń SQL, skrypty automatyzujące tworzenie struktury bazy danych, publikowanie baz danych w sieci, automatyzacja pracy.
+*Umiejętności:* uczeń sprawnie i samodzielnie, w ustalonym czasie i bez pomocy nauczyciela, wykonuje złożone zadania praktyczne na poziomie testu egzaminacyjnego INF.03 w zakresie zrealizowanego materiału: realizuje kompletny proces — od zaawansowanego diagramu E/R, przez implementację całej struktury bazy jednym skryptem SQL, po zapytania z funkcjami agregującymi, podzapytaniami i złączeniami wielotabelowymi; zarządza bazą danych za pomocą poleceń SQL, **programuje skrypty automatyzujące tworzenie struktury bazy danych**, publikuje bazę danych w sieci.
 
 **Ocena celująca (6) — indywidualny projekt z omówieniem**
 *Zakres materiału:* zagadnienia wykraczające poza program nauczania, ustalane indywidualnie z nauczycielem.
@@ -41,7 +41,7 @@ Powyższe wymagania dotyczą **ocen klasyfikacyjnych** (śródrocznej i końcowe
 **Ocena niedostateczna (1)**
 Uczeń nie spełnia wymagań na ocenę dopuszczającą.
 
-**Sposób ustalania oceny za konkretną pracę:** wszystkie prace pisemne i praktyczne (sprawdziany, prace klasowe, testy, kartkówki, zadania wykonywane na stanowisku komputerowym) są punktowane; ocenę ustala się na podstawie procentu uzyskanych punktów według progów określonych w części 3 — dla prac wykonywanych na stanowisku komputerowym stosuje się progi części praktycznej. Przy pracach praktycznych nauczyciel może dodatkowo zadać pytania kontrolne dotyczące wykonania, w celu zweryfikowania samodzielności i zrozumienia rozwiązania.
+**Sposób ustalania oceny za konkretną pracę:** prace kontrolne — sprawdziany, prace klasowe i testy (w tym testy kompetencji zawodowych w formule egzaminacyjnej INF.03) — są punktowane; ocenę ustala się na podstawie procentu uzyskanych punktów według progów określonych w części 3 (część teoretyczna — dla prac pisemnych, część praktyczna — dla testów wykonywanych na stanowisku komputerowym). Kartkówki oraz bieżące zadania i ćwiczenia wykonywane na stanowisku komputerowym w trakcie zajęć są również punktowane, ale **nie są pisemnymi pracami kontrolnymi** — ocenia się je według szczegółowych kryteriów podanych uczniom przed rozpoczęciem pracy (statut § 82 ust. 11), z uwzględnieniem kryteriów opisanych w części 1. Przy pracach praktycznych nauczyciel może dodatkowo zadać pytania kontrolne dotyczące wykonania, w celu zweryfikowania samodzielności i zrozumienia rozwiązania.
 
 ---
 
@@ -68,7 +68,7 @@ Szczegółowe kryteria oceny każdej pracy lub projektu uczniowie poznają przed
 
 ---
 
-## 3. Progi procentowe ocen z prac pisemnych (statut § 82 ust. 10)
+## 3. Progi procentowe ocen z prac kontrolnych (statut § 82 ust. 9–10)
 
 **Część teoretyczna:**
 
@@ -83,6 +83,8 @@ Szczegółowe kryteria oceny każdej pracy lub projektu uczniowie poznają przed
 | ocena | niedostateczna | dopuszczająca | dostateczna | dobra | bardzo dobra | celująca |
 
 Progi odpowiadają warunkom zaliczenia egzaminu zawodowego ustalonym przez CKE (część teoretyczna — min. 50%, część praktyczna — min. 75%).
+
+Powyższe progi stosuje się wyłącznie do zapowiadanych prac kontrolnych: sprawdzianów, prac klasowych i testów. **Kartkówki oraz bieżące zadania i ćwiczenia wykonywane na stanowisku komputerowym w trakcie zajęć** (statut § 81 pkt 5, 7, 11 i 13) nie są pisemnymi pracami kontrolnymi — ich oceny bieżące ustala się według szczegółowych kryteriów podanych uczniom przed rozpoczęciem pracy (statut § 82 ust. 11), z uwzględnieniem kryteriów z części 1 (samodzielność, poprawność, poziom wykonania); przy kartkówkach pisemnych nauczyciel może stosować progi części teoretycznej. Celem progów części praktycznej jest zapewnienie zgodności wymagań z warunkami zdania egzaminu zawodowego — dotyczą one zatem prac zapowiadanych, sprawdzających większą partię materiału i wykonywanych w warunkach zbliżonych do egzaminacyjnych.
 
 ---
 
