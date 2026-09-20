@@ -185,6 +185,107 @@
   }
   .stop b{font-size:1.15rem}
 
+  /* ---------- STEPPER: SELECT KROK PO KROKU ---------- */
+  .stepper{
+    background:var(--karta);border:3px solid var(--granat);border-radius:18px;
+    padding:16px 18px 20px;margin-top:16px;
+  }
+  .stepper:focus{outline:3px solid var(--niebieski);outline-offset:3px}
+
+  .st-gora{display:flex;gap:16px;flex-wrap:wrap;align-items:stretch}
+
+  .st-kod{
+    flex:1 1 340px;background:#0f172a;border-radius:12px;padding:12px 10px;
+    font-family:"SF Mono",Menlo,Consolas,monospace;font-size:1rem;line-height:1.45;
+  }
+  .st-kod .lin{
+    display:block;padding:3px 10px;border-radius:7px;color:#64748b;
+    transition:background-color .3s,color .3s;white-space:pre-wrap;
+  }
+  .st-kod .lin.akt{background:#1d4ed8;color:#fff;font-weight:700}
+  .st-kod .lin.zrobione{color:#7dd3fc}
+
+  .st-panel{flex:1 1 320px;display:flex;flex-direction:column;gap:10px}
+  .st-liczniki{display:flex;gap:10px;flex-wrap:wrap}
+  .st-licznik{
+    background:var(--jasny);color:var(--granat);border-radius:10px;
+    padding:6px 12px;font-size:.95rem;font-weight:700;
+  }
+  .st-licznik span{font-size:1.35rem;display:inline-block;min-width:22px}
+  .st-licznik.zielony{background:var(--jasnyziel);color:#14532d}
+  .st-tytul{
+    font-size:1.25rem;font-weight:700;color:var(--granat);
+    display:flex;align-items:center;gap:10px;
+  }
+  .st-tytul code{background:var(--jasny);padding:1px 8px;border-radius:6px;font-size:1.05rem}
+  .st-opis{margin:0;font-size:1rem;color:var(--szary)}
+  .st-opis b{color:#0f172a}
+
+  .st-nawigacja{
+    display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+    margin:16px 0 10px;padding-top:12px;border-top:2px solid var(--linia);
+  }
+  .st-nawigacja button{
+    font:inherit;font-weight:700;cursor:pointer;border-radius:10px;
+    padding:9px 16px;border:2px solid var(--granat);
+    background:var(--granat);color:#fff;transition:filter .15s,opacity .15s;
+  }
+  .st-nawigacja button.jasny{background:#fff;color:var(--granat)}
+  .st-nawigacja button:hover:not(:disabled){filter:brightness(1.15)}
+  .st-nawigacja button:disabled{opacity:.35;cursor:not-allowed}
+  .st-kropki{display:flex;gap:7px;margin-left:auto;flex-wrap:wrap}
+  .st-kropki button{
+    width:30px;height:30px;padding:0;border-radius:50%;
+    border:2px solid var(--linia);background:#fff;color:var(--szary);
+    font-size:.85rem;font-weight:700;
+  }
+  .st-kropki button.akt{background:var(--niebieski);border-color:var(--niebieski);color:#fff}
+  .st-kropki button.przed{background:var(--jasny);border-color:var(--niebieski);color:var(--granat)}
+
+  .st-tabela{overflow-x:auto;border-radius:12px}
+  table.st-dane{border-collapse:collapse;width:100%;font-size:1rem;min-width:620px}
+  table.st-dane th,table.st-dane td{
+    border:1px solid var(--linia);padding:7px 11px;text-align:left;
+    transition:background-color .35s,color .35s,opacity .35s;
+  }
+  table.st-dane thead th{background:var(--jasny);color:var(--granat);font-weight:700}
+  table.st-dane tbody tr:nth-child(even) td{background:#f8fafc}
+  table.st-dane .null{color:#94a3b8;font-style:italic}
+
+  table.st-dane tr.pasuje td{background:#eafbf0!important;color:#14532d!important}
+  table.st-dane tr.wynik td{background:var(--jasnyziel)!important;font-weight:600;color:#14532d!important}
+  table.st-dane tr.zle td{background:#fee2e2!important;color:#b91c1c!important;text-decoration:line-through}
+  table.st-dane tr.ciety td{background:#f1f5f9!important;color:#94a3b8!important;text-decoration:line-through}
+  table.st-dane td.zle,table.st-dane th.zle{
+    background:#fee2e2!important;color:#b91c1c!important;text-decoration:line-through;opacity:.8;
+  }
+  table.st-dane .ukryty{display:none}
+  table.st-dane tr.ukryty{display:none}
+  table.st-dane .badanie{box-shadow:inset 0 0 0 3px var(--niebieski)}
+  table.st-dane thead th.badanie{background:#bfdbfe}
+  .st-tabela.gotowe{box-shadow:0 0 0 3px var(--zielony)}
+  .st-tabela.bonus{box-shadow:0 0 0 3px var(--pomarancz)}
+  .st-kod-bonus{border:2px solid var(--pomarancz)}
+  .st-kod-bonus .lin.akt{background:#b45309}
+  .st-kod-bonus .lin[data-lin="bkom"]{color:#fdba74}
+
+  .st-alias .orig{display:none}
+  .st-alias .alias{display:inline}
+  .orig{display:inline}
+  .alias{display:none}
+
+  .st-stopka{
+    margin-top:12px;background:var(--jasny);border-radius:10px;padding:8px 12px;
+    font-size:.95rem;color:var(--granat);
+  }
+
+  @media print{
+    .stepper{border-width:1.5pt;page-break-inside:avoid}
+    .st-nawigacja,.st-kropki{display:none}
+    .st-kod{background:#fff;border:1pt solid #000}
+    .st-kod .lin,.st-kod .lin.akt{color:#000;background:#fff}
+  }
+
   @media print{
     body{background:#fff;padding:0;font-size:11.5pt}
     .strona{max-width:none}
@@ -563,6 +664,298 @@ LIMIT 10;</pre>
     <b>Tu się na razie zatrzymujemy.</b><br>
     Zliczanie i podsumowywanie danych (<code>COUNT</code>, <code>SUM</code>, <code>AVG</code>) — na kolejnych lekcjach.
   </div>
+
+  <!-- ================= CZĘŚĆ 3: STEPPER ================= -->
+  <h2 class="przelam"><span class="nr">3</span> Klatka po klatce: co serwer robi z moim zapytaniem</h2>
+  <p class="wstep">
+    Jedna tabela, 10 wierszy i jedno zapytanie — z <code>AND</code>, <code>OR</code>,
+    <code>ORDER BY</code> i <code>LIMIT</code> naraz. Klikaj <b>Dalej →</b> i patrz, co znika,
+    co się przestawia i dlaczego kolejność klauzul ma znaczenie.
+    (Możesz też używać strzałek ← → na klawiaturze.)
+  </p>
+
+  <div class="stepper" id="stepper" tabindex="0">
+
+    <div class="st-gora">
+      <div class="st-kod" id="stKod1">
+        <span class="lin" data-lin="select">SELECT imie, nazwisko, srednia AS "Średnia ocen"</span>
+        <span class="lin" data-lin="from">FROM uczniowie</span>
+        <span class="lin" data-lin="where1">WHERE (id_klasy = 1</span>
+        <span class="lin" data-lin="where1b">    OR id_klasy = 3)</span>
+        <span class="lin" data-lin="where2">  AND srednia &gt;= 3.5</span>
+        <span class="lin" data-lin="order">ORDER BY srednia DESC</span>
+        <span class="lin" data-lin="limit">LIMIT 3;</span>
+      </div>
+
+      <div class="st-kod st-kod-bonus" id="stKod2" hidden>
+        <span class="lin" data-lin="bselect">SELECT imie, nazwisko, srednia</span>
+        <span class="lin" data-lin="bfrom">FROM uczniowie</span>
+        <span class="lin akt" data-lin="bwhere">WHERE id_klasy = 1
+   OR id_klasy = 3
+  AND srednia &gt;= 3.5</span>
+        <span class="lin" data-lin="bkom">-- ❌ ktoś zapomniał nawiasów!</span>
+      </div>
+
+      <div class="st-panel">
+        <div class="st-liczniki">
+          <div class="st-licznik">wiersze: <span id="stWiersze">10</span></div>
+          <div class="st-licznik">kolumny: <span id="stKolumny">6</span></div>
+          <div class="st-licznik zielony" id="stEtap">krok 0 / 9</div>
+        </div>
+        <div class="st-tytul" id="stTytul">Zapytanie wpada do serwera</div>
+        <p class="st-opis" id="stOpis">Opis kroku.</p>
+      </div>
+    </div>
+
+    <div class="st-nawigacja">
+      <button type="button" class="jasny" id="stWstecz">← Wstecz</button>
+      <button type="button" id="stDalej">Dalej →</button>
+      <button type="button" class="jasny" id="stAuto">▶ Odtwórz</button>
+      <button type="button" class="jasny" id="stReset">↺ Od nowa</button>
+      <div class="st-kropki" id="stKropki"></div>
+    </div>
+
+    <div class="st-tabela" id="stTabela">
+      <table class="st-dane" id="stTab">
+        <thead>
+          <tr>
+            <th data-kol="id">id</th>
+            <th data-kol="imie">imie</th>
+            <th data-kol="nazwisko">nazwisko</th>
+            <th data-kol="id_klasy">id_klasy</th>
+            <th data-kol="email">email</th>
+            <th data-kol="srednia"><span class="orig">srednia</span><span class="alias">Średnia ocen</span></th>
+          </tr>
+        </thead>
+        <tbody id="stBody">
+          <tr data-id="1"><td data-kol="id">1</td><td data-kol="imie">Anna</td><td data-kol="nazwisko">Kowalska</td><td data-kol="id_klasy">3</td><td data-kol="email">a.kowalska@zsp.pl</td><td data-kol="srednia">4.35</td></tr>
+          <tr data-id="2"><td data-kol="id">2</td><td data-kol="imie">Bartosz</td><td data-kol="nazwisko">Nowak</td><td data-kol="id_klasy">1</td><td data-kol="email" class="null">NULL</td><td data-kol="srednia">3.80</td></tr>
+          <tr data-id="3"><td data-kol="id">3</td><td data-kol="imie">Celina</td><td data-kol="nazwisko">Wójcik</td><td data-kol="id_klasy">3</td><td data-kol="email">c.wojcik@zsp.pl</td><td data-kol="srednia">5.10</td></tr>
+          <tr data-id="4"><td data-kol="id">4</td><td data-kol="imie">Damian</td><td data-kol="nazwisko">Zieliński</td><td data-kol="id_klasy">2</td><td data-kol="email">d.zielinski@zsp.pl</td><td data-kol="srednia">2.95</td></tr>
+          <tr data-id="5"><td data-kol="id">5</td><td data-kol="imie">Ewa</td><td data-kol="nazwisko">Lewandowska</td><td data-kol="id_klasy">1</td><td data-kol="email">e.lewandowska@zsp.pl</td><td data-kol="srednia">3.20</td></tr>
+          <tr data-id="6"><td data-kol="id">6</td><td data-kol="imie">Filip</td><td data-kol="nazwisko">Szymański</td><td data-kol="id_klasy">3</td><td data-kol="email">f.szymanski@zsp.pl</td><td data-kol="srednia">4.05</td></tr>
+          <tr data-id="7"><td data-kol="id">7</td><td data-kol="imie">Gabriela</td><td data-kol="nazwisko">Dąbrowska</td><td data-kol="id_klasy">5</td><td data-kol="email">g.dabrowska@zsp.pl</td><td data-kol="srednia">4.80</td></tr>
+          <tr data-id="8"><td data-kol="id">8</td><td data-kol="imie">Hubert</td><td data-kol="nazwisko">Kamiński</td><td data-kol="id_klasy">1</td><td data-kol="email">h.kaminski@zsp.pl</td><td data-kol="srednia">3.55</td></tr>
+          <tr data-id="9"><td data-kol="id">9</td><td data-kol="imie">Iwona</td><td data-kol="nazwisko">Mazur</td><td data-kol="id_klasy">2</td><td data-kol="email">i.mazur@zsp.pl</td><td data-kol="srednia">4.60</td></tr>
+          <tr data-id="10"><td data-kol="id">10</td><td data-kol="imie">Jakub</td><td data-kol="nazwisko">Piotrowski</td><td data-kol="id_klasy">3</td><td data-kol="email" class="null">NULL</td><td data-kol="srednia">3.45</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="st-stopka" id="stStopka">
+      Kolejność <b>wykonywania</b> jest inna niż kolejność <b>pisania</b>:
+      <code>FROM</code> → <code>WHERE</code> → <code>SELECT</code> → <code>ORDER BY</code> → <code>LIMIT</code>.
+    </div>
+  </div>
+
+<script>
+(function(){
+  var WSZ_KOL   = ['id','imie','nazwisko','id_klasy','email','srednia'];
+  var KOL_WYNIK = ['imie','nazwisko','srednia'];
+  var PO_SORT   = [3,1,6,2,8];   // 5 wierszy po ORDER BY srednia DESC
+
+  // pasuje = spełnia dotychczasowy warunek (zielony), zle = odpada (czerwony),
+  // ciety = ucięty przez LIMIT (szary), ukryty = już wyrzucony, wynik = finalny wiersz
+  var KROKI = [
+    {
+      lin:[], kol:'all', wiersze:10, kolumny:6,
+      tytul:'Serwer dostaje zapytanie',
+      opis:'Cała tabela <b>uczniowie</b> leży w bazie: 10 wierszy, 6 kolumn. Serwer <b>nie czyta zapytania od góry do dołu</b> — najpierw wykonuje <code>FROM</code>, a <code>SELECT</code> dopiero w połowie drogi.'
+    },
+    {
+      lin:['from'], kol:'all', wiersze:10, kolumny:6,
+      tytul:'<code>FROM uczniowie</code> — biorę tabelę',
+      opis:'Pierwszy krok: serwer otwiera wskazaną tabelę i zaczyna pracę na <b>wszystkich 10 wierszach</b>. Na razie nic nie jest wyrzucone ani posortowane.'
+    },
+    {
+      lin:['where1'], kol:'all', badanie:['id_klasy'], pasuje:[2,5,8], wiersze:3, kolumny:6,
+      tytul:'<code>id_klasy = 1</code> — pierwsza część <code>OR</code>',
+      opis:'Serwer bierze pierwszy nawias i sprawdza tylko kolumnę <b>id_klasy</b>. Pasują 3 wiersze: Bartosz, Ewa, Hubert. Reszta <b>jeszcze nie jest odrzucona</b> — czeka na drugą opcję po <code>OR</code>.'
+    },
+    {
+      lin:['where1','where1b'], kol:'all', badanie:['id_klasy'],
+      pasuje:[2,5,8,1,3,6,10], zle:[4,7,9], wiersze:7, kolumny:6,
+      tytul:'<code>OR id_klasy = 3</code> — wystarczy JEDEN warunek',
+      opis:'<code>OR</code> dokłada wiersze: do klasy 1 dochodzi klasa 3 (Anna, Celina, Filip, Jakub) — razem <b>7 wierszy</b>. Damian (klasa 2), Gabriela (5) i Iwona (2) nie trafiły w żadną opcję, więc lecą na czerwono. Cały nawias jest teraz <b>jednym wielkim „TAK”</b>.'
+    },
+    {
+      lin:['where1','where1b','where2'], kol:'all', badanie:['srednia'],
+      ukryty:[4,7,9], zle:[5,10], pasuje:[1,2,3,6,8], wiersze:5, kolumny:6,
+      tytul:'<code>AND srednia &gt;= 3.5</code> — sito nad sitem',
+      opis:'<code>AND</code> znaczy „<b>i to, i to</b>”: wiersz musi być w nawiasie <i>oraz</i> mieć średnią min. 3.5. Z siedmiu zostaje <b>5</b> — Ewa (3.20) i Jakub (3.45) wypadają, mimo że ich klasa się zgadzała.'
+    },
+    {
+      lin:['select'], kol:'zleNiewybrane', ukryty:[4,5,7,9,10], pasuje:[1,2,3,6,8],
+      wiersze:5, kolumny:3,
+      tytul:'<code>SELECT</code> — wybieram kolumny',
+      opis:'Dopiero teraz serwer zostawia kolumny z <code>SELECT</code>: <b>imie, nazwisko, srednia</b>. <code>id</code>, <code>id_klasy</code> i <code>email</code> znikają z wyniku — dlatego <b>alias z SELECT nie działa w WHERE</b>: WHERE było wcześniej!'
+    },
+    {
+      lin:['order'], kol:'wynik', order:'srednia', badanie:['srednia'],
+      ukryty:[4,5,7,9,10], pasuje:[1,2,3,6,8], wiersze:5, kolumny:3,
+      tytul:'<code>ORDER BY srednia DESC</code> — sortuję',
+      opis:'Wiersze zmieniają miejsca: od największej średniej do najmniejszej. <b>Nic nie ginie</b> — wciąż 5 wierszy, tylko w innej kolejności. Bez <code>ORDER BY</code> kolejność jest przypadkowa.'
+    },
+    {
+      lin:['limit'], kol:'wynik', order:'srednia',
+      ukryty:[4,5,7,9,10], ciety:[2,8], pasuje:[1,3,6], wiersze:3, kolumny:3,
+      tytul:'<code>LIMIT 3</code> — ucinam ogon',
+      opis:'Na sam koniec serwer bierze <b>3 pierwsze wiersze z już posortowanej listy</b>. Bartosz i Hubert są obcięci. Dlatego <code>LIMIT</code> bez <code>ORDER BY</code> to loteria.'
+    },
+    {
+      lin:[], kol:'wynik', order:'srednia', koniec:true,
+      ukryty:[2,4,5,7,8,9,10], wynik:[1,3,6], wiersze:3, kolumny:3,
+      tytul:'✅ To widzę w phpMyAdmin',
+      opis:'Gotowa odpowiedź: <b>3 wiersze × 3 kolumny</b>, trzecia kolumna podpisana przez <code>AS</code> jako „Średnia ocen”. Cała reszta tabeli w bazie <b>zostaje nietknięta</b> — <code>SELECT</code> nigdy nie usuwa danych.'
+    },
+    {
+      lin:['bwhere'], kol:'all', bonus:true, badanie:['id_klasy','srednia'],
+      pasuje:[2,5,8,1,3,6], zle:[4,7,9,10], wiersze:6, kolumny:6,
+      tytul:'🧨 Bonus: to samo <b>bez nawiasów</b>',
+      opis:'<code>AND</code> jest „mocniejsze” od <code>OR</code>, więc serwer czyta to jako <code>id_klasy = 1 OR (id_klasy = 3 AND srednia &gt;= 3.5)</code>. Efekt: warunek o średniej pilnuje <b>tylko klasy 3</b>. Ewa (klasa 1, średnia <b>3.20</b>) wjeżdża na gapę, a wierszy jest <b>6, nie 5</b>. Morał: przy mieszaniu <code>AND</code> z <code>OR</code> <b>zawsze stawiaj nawiasy</b>.'
+    }
+  ];
+
+  var stepper = document.getElementById('stepper');
+  if(!stepper) return;
+  var tabela  = document.getElementById('stTabela');
+  var tbody   = document.getElementById('stBody');
+  var tab     = document.getElementById('stTab');
+  var kropki  = document.getElementById('stKropki');
+  var btnD    = document.getElementById('stDalej');
+  var btnW    = document.getElementById('stWstecz');
+  var btnAuto = document.getElementById('stAuto');
+  var kod1    = document.getElementById('stKod1');
+  var kod2    = document.getElementById('stKod2');
+  var stopka  = document.getElementById('stStopka');
+  var wiersze = {};
+  var krok = 0, timer = null;
+
+  Array.prototype.forEach.call(tbody.rows, function(tr){ wiersze[tr.dataset.id] = tr; });
+
+  KROKI.forEach(function(k,i){
+    var b = document.createElement('button');
+    b.type = 'button'; b.textContent = i;
+    b.title = 'Krok ' + i;
+    b.addEventListener('click', function(){ stop(); idz(i); });
+    kropki.appendChild(b);
+  });
+
+  function ma(lista, id){ return !!lista && lista.indexOf(id) > -1; }
+
+  function stanWiersza(k, id){
+    if(ma(k.ukryty, id)) return 'ukryty';
+    if(ma(k.zle, id))    return 'zle';
+    if(ma(k.ciety, id))  return 'ciety';
+    if(ma(k.wynik, id))  return 'wynik';
+    if(ma(k.pasuje, id)) return 'pasuje';
+    return '';
+  }
+  function stanKolumny(k, kol){
+    if(KOL_WYNIK.indexOf(kol) > -1 || k.kol === 'all') return 'ok';
+    return k.kol === 'zleNiewybrane' ? 'zle' : 'ukryty';
+  }
+
+  function idz(i){
+    krok = Math.max(0, Math.min(KROKI.length - 1, i));
+    var k = KROKI[krok];
+
+    // FLIP: zapamiętaj pozycje wierszy przed przestawieniem
+    var przed = {};
+    Array.prototype.forEach.call(tbody.rows, function(tr){
+      przed[tr.dataset.id] = tr.getBoundingClientRect().top;
+    });
+
+    var kolejnosc = k.order === 'srednia' ? PO_SORT.slice() : [1,2,3,4,5,6,7,8,9,10];
+    // wiersze odrzucone dopisujemy na koniec listy (i tak są wtedy ukryte)
+    [1,2,3,4,5,6,7,8,9,10].forEach(function(id){
+      if(kolejnosc.indexOf(id) === -1) kolejnosc.push(id);
+    });
+    kolejnosc.forEach(function(id){ tbody.appendChild(wiersze[id]); });
+
+    // stan wierszy
+    Array.prototype.forEach.call(tbody.rows, function(tr){
+      tr.className = stanWiersza(k, parseInt(tr.dataset.id, 10));
+    });
+
+    // stan kolumn + podświetlenie badanej kolumny
+    WSZ_KOL.forEach(function(kol){
+      var st = stanKolumny(k, kol);
+      Array.prototype.forEach.call(tab.querySelectorAll('[data-kol="'+kol+'"]'), function(c){
+        c.classList.toggle('zle', st === 'zle');
+        c.classList.toggle('ukryty', st === 'ukryty');
+        c.classList.toggle('badanie', ma(k.badanie, kol));
+        if(kol === 'email') c.classList.toggle('null', c.textContent.trim() === 'NULL');
+      });
+    });
+
+    // FLIP: animuj przesunięcie
+    Array.prototype.forEach.call(tbody.rows, function(tr){
+      var stary = przed[tr.dataset.id];
+      if(stary === undefined) return;
+      var delta = stary - tr.getBoundingClientRect().top;
+      if(!delta) return;
+      tr.style.transition = 'none';
+      tr.style.transform = 'translateY(' + delta + 'px)';
+      requestAnimationFrame(function(){
+        tr.style.transition = 'transform .5s cubic-bezier(.2,.8,.2,1)';
+        tr.style.transform = '';
+      });
+    });
+
+    tab.classList.toggle('st-alias', k.kol === 'wynik');
+    tabela.classList.toggle('gotowe', !!k.koniec);
+    tabela.classList.toggle('bonus', !!k.bonus);
+    kod1.hidden = !!k.bonus;
+    kod2.hidden = !k.bonus;
+    stopka.innerHTML = k.bonus
+      ? '<b>Zapamiętaj:</b> <code>AND</code> liczy się przed <code>OR</code> — dokładnie jak <code>·</code> przed <code>+</code> w matematyce. Nawiasy ustawiają kolejność po Twojemu.'
+      : 'Kolejność <b>wykonywania</b> jest inna niż kolejność <b>pisania</b>: <code>FROM</code> → <code>WHERE</code> → <code>SELECT</code> → <code>ORDER BY</code> → <code>LIMIT</code>.';
+    document.getElementById('stWiersze').textContent = k.wiersze;
+    document.getElementById('stKolumny').textContent = k.kolumny;
+    document.getElementById('stEtap').textContent = 'krok ' + krok + ' / ' + (KROKI.length - 1);
+    document.getElementById('stTytul').innerHTML = k.tytul;
+    document.getElementById('stOpis').innerHTML = k.opis;
+
+    Array.prototype.forEach.call(document.querySelectorAll('.st-kod .lin'), function(l){
+      var aktywna = k.lin.indexOf(l.dataset.lin) > -1;
+      l.classList.toggle('akt', aktywna);
+      l.classList.toggle('zrobione', !aktywna && krok > 0);
+    });
+    Array.prototype.forEach.call(kropki.children, function(b,i2){
+      b.classList.toggle('akt', i2 === krok);
+      b.classList.toggle('przed', i2 < krok);
+    });
+
+    btnW.disabled = krok === 0;
+    btnD.disabled = krok === KROKI.length - 1;
+    if(btnD.disabled) stop();
+  }
+
+  function stop(){
+    if(timer){ clearInterval(timer); timer = null; btnAuto.textContent = '▶ Odtwórz'; }
+  }
+
+  btnD.addEventListener('click', function(){ stop(); idz(krok + 1); });
+  btnW.addEventListener('click', function(){ stop(); idz(krok - 1); });
+  document.getElementById('stReset').addEventListener('click', function(){ stop(); idz(0); });
+  btnAuto.addEventListener('click', function(){
+    if(timer){ stop(); return; }
+    if(krok === KROKI.length - 1) idz(0);
+    btnAuto.textContent = '⏸ Pauza';
+    timer = setInterval(function(){
+      if(krok >= KROKI.length - 1){ stop(); return; }
+      idz(krok + 1);
+    }, 2200);
+  });
+  stepper.addEventListener('keydown', function(e){
+    if(e.key === 'ArrowRight'){ e.preventDefault(); stop(); idz(krok + 1); }
+    if(e.key === 'ArrowLeft'){  e.preventDefault(); stop(); idz(krok - 1); }
+  });
+
+  idz(0);
+})();
+</script>
 
 </div>
 </body>

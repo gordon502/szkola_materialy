@@ -1,0 +1,1435 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GROUP BY + HAVING — ściąga</title>
+<style>
+  :root{
+    --tlo:#f4f6fb;
+    --karta:#ffffff;
+    --granat:#1e3a8a;
+    --niebieski:#2563eb;
+    --jasny:#dbeafe;
+    --zielony:#15803d;
+    --jasnyziel:#dcfce7;
+    --pomarancz:#c2410c;
+    --jasnypom:#ffedd5;
+    --fiolet:#6d28d9;
+    --jasnyfiol:#ede9fe;
+    --szary:#475569;
+    --linia:#cbd5e1;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; padding:28px 18px 60px;
+    background:var(--tlo); color:#0f172a;
+    font-family:"Segoe UI",system-ui,-apple-system,Arial,sans-serif;
+    font-size:17px; line-height:1.5;
+  }
+  .strona{max-width:1180px;margin:0 auto}
+
+  h1{
+    font-size:2.6rem; text-align:center; margin:0 0 6px;
+    color:var(--granat); letter-spacing:-.5px;
+  }
+  .podtytul{text-align:center;color:var(--szary);font-size:1.15rem;margin:0 0 34px}
+
+  h2{
+    font-size:1.9rem; color:var(--granat);
+    margin:46px 0 6px; display:flex; align-items:center; gap:12px;
+  }
+  h2 .nr{
+    background:var(--granat); color:#fff; border-radius:12px;
+    width:46px; height:46px; display:inline-flex; align-items:center;
+    justify-content:center; font-size:1.4rem; flex:none;
+  }
+  h3{font-size:1.3rem;color:var(--granat);margin:26px 0 10px}
+  .wstep{color:var(--szary);margin:0 0 18px;font-size:1.05rem}
+
+  .siatka{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:16px;margin-top:16px}
+  .karta{
+    background:var(--karta);border:2px solid var(--linia);border-radius:14px;
+    padding:14px 16px 16px;
+  }
+  .karta h4{
+    margin:0 0 4px;font-size:1.15rem;color:var(--granat);
+    display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  }
+  .karta h4 code{
+    background:var(--jasny);color:var(--granat);padding:2px 8px;border-radius:6px;
+    font-size:1rem;
+  }
+  .karta p.cel{margin:0 0 8px;font-size:.95rem;color:var(--szary)}
+  pre{
+    margin:0;background:#f1f5f9;border-left:4px solid var(--niebieski);
+    border-radius:0 8px 8px 0;padding:10px 12px;overflow-x:auto;
+    font-family:"SF Mono",Menlo,Consolas,monospace;font-size:.95rem;line-height:1.6;
+  }
+  pre + pre{margin-top:8px}
+  code{font-family:"SF Mono",Menlo,Consolas,monospace}
+  .wynik{
+    margin-top:8px;font-size:.9rem;color:var(--zielony);
+    background:var(--jasnyziel);border-radius:8px;padding:6px 10px;
+  }
+  .wynik b{color:#14532d}
+  .wynik.zly{color:#991b1b;background:#fee2e2}
+  .wynik.zly b{color:#7f1d1d}
+
+  /* ---------- SZKIELET ZAPYTANIA ---------- */
+  .szkielet{
+    background:#0f172a;color:#e2e8f0;border-radius:14px;padding:6px 20px 14px;
+    overflow-x:auto;
+  }
+  .szkielet .wiersz{
+    display:grid; grid-template-columns:250px 1fr; gap:18px;
+    align-items:baseline; padding:9px 0;
+    border-bottom:1px dashed #334155;
+  }
+  .szkielet .wiersz:last-child{border-bottom:none}
+  .szkielet .kw{
+    font-family:"SF Mono",Menlo,Consolas,monospace;
+    font-size:1.15rem; font-weight:700; color:#7dd3fc; white-space:nowrap;
+  }
+  .szkielet .kw .opc{color:#64748b;font-size:.8rem;font-weight:400;display:block}
+  .szkielet .cm{font-size:1rem;color:#cbd5e1}
+  .szkielet .cm b{color:#fff}
+  .szkielet .cm em{color:#94a3b8;font-style:normal;font-size:.9rem;display:block}
+  .szkielet .nrw{
+    display:inline-block;background:#1d4ed8;color:#fff;border-radius:6px;
+    width:24px;text-align:center;font-size:.85rem;margin-right:8px;
+  }
+
+  /* ---------- KUBEŁKI (GROUP BY graficznie) ---------- */
+  .kubelki{display:flex;gap:14px;flex-wrap:wrap;margin-top:14px}
+  .kubelek{
+    flex:1 1 200px;border:3px solid var(--linia);border-radius:14px;
+    background:var(--karta);padding:10px 12px 14px;
+  }
+  .kubelek .naglowek{
+    font-weight:700;font-size:1.05rem;margin-bottom:8px;
+    padding:4px 10px;border-radius:999px;display:inline-block;
+  }
+  .kubelek .zeton{
+    display:block;background:#f1f5f9;border-radius:8px;
+    padding:4px 9px;margin:4px 0;font-size:.95rem;
+  }
+  .kubelek .agregat{
+    margin-top:10px;border-top:2px dashed var(--linia);padding-top:8px;
+    font-size:.95rem;font-family:"SF Mono",Menlo,Consolas,monospace;
+  }
+  .k1{border-color:var(--niebieski)}   .k1 .naglowek{background:var(--jasny);color:var(--granat)}
+  .k2{border-color:var(--pomarancz)}   .k2 .naglowek{background:var(--jasnypom);color:var(--pomarancz)}
+  .k3{border-color:var(--fiolet)}      .k3 .naglowek{background:var(--jasnyfiol);color:var(--fiolet)}
+  .strzalka{text-align:center;font-size:2rem;color:var(--szary);line-height:1;margin:8px 0}
+
+  /* ---------- TABELE ---------- */
+  .zoom{
+    background:var(--karta);border:2px solid var(--linia);
+    border-radius:16px;padding:18px;margin-top:16px;overflow-x:auto;
+  }
+  table.dane{border-collapse:collapse;width:100%;font-size:1rem;min-width:520px}
+  table.dane th,table.dane td{border:1px solid var(--linia);padding:8px 12px;text-align:left}
+  table.dane thead th{background:var(--jasny);color:var(--granat);font-weight:700}
+  table.dane .null{color:#94a3b8;font-style:italic}
+  table.dane td.agr{background:var(--jasnyziel);font-weight:600;color:#14532d}
+
+  table.porownanie{border-collapse:collapse;width:100%;margin-top:14px;font-size:1rem}
+  table.porownanie th,table.porownanie td{border:2px solid var(--linia);padding:10px 14px;vertical-align:top}
+  table.porownanie thead th{background:var(--granat);color:#fff;font-size:1.05rem}
+  table.porownanie tbody th{background:#f1f5f9;color:var(--granat);text-align:left;width:190px}
+  table.porownanie code{background:var(--jasny);padding:1px 6px;border-radius:5px}
+
+  .uwaga{
+    margin-top:26px;background:#fff7ed;border:2px solid var(--pomarancz);
+    border-radius:14px;padding:14px 18px;
+  }
+  .uwaga h3{margin:0 0 8px;color:var(--pomarancz)}
+  .uwaga ul{margin:0;padding-left:22px}
+  .uwaga li{margin:6px 0}
+  .uwaga code{background:#ffedd5;padding:1px 6px;border-radius:5px}
+
+  .zasada{
+    margin-top:16px;background:var(--jasnyziel);border:2px solid var(--zielony);
+    border-radius:14px;padding:14px 18px;
+  }
+  .zasada h3{margin:0 0 6px;color:#14532d}
+  .zasada p{margin:0;font-size:1.05rem}
+
+  .stop{
+    margin-top:26px;text-align:center;background:#fee2e2;border:2px dashed #dc2626;
+    border-radius:14px;padding:12px 18px;color:#991b1b;font-size:1.05rem;
+  }
+  .stop b{font-size:1.15rem}
+
+  /* ---------- STEPPER ---------- */
+  .stepper{
+    background:var(--karta);border:3px solid var(--granat);border-radius:18px;
+    padding:16px 18px 20px;margin-top:16px;
+  }
+  .stepper:focus{outline:3px solid var(--niebieski);outline-offset:3px}
+  .st-gora{display:flex;gap:16px;flex-wrap:wrap;align-items:stretch}
+  .st-kod{
+    flex:1 1 380px;background:#0f172a;border-radius:12px;padding:12px 10px;
+    font-family:"SF Mono",Menlo,Consolas,monospace;font-size:.98rem;line-height:1.45;
+  }
+  .st-kod .lin{
+    display:block;padding:3px 10px;border-radius:7px;color:#64748b;
+    transition:background-color .3s,color .3s;white-space:pre-wrap;
+  }
+  .st-kod .lin.akt{background:#1d4ed8;color:#fff;font-weight:700}
+  .st-kod .lin.zrobione{color:#7dd3fc}
+  .st-kod-bonus{border:2px solid var(--pomarancz)}
+  .st-kod-bonus .lin.akt{background:#b45309}
+  .st-kod-bonus .lin[data-lin="bkom"]{color:#fdba74}
+
+  .st-panel{flex:1 1 300px;display:flex;flex-direction:column;gap:10px}
+  .st-liczniki{display:flex;gap:10px;flex-wrap:wrap}
+  .st-licznik{
+    background:var(--jasny);color:var(--granat);border-radius:10px;
+    padding:6px 12px;font-size:.95rem;font-weight:700;
+  }
+  .st-licznik span{font-size:1.35rem;display:inline-block;min-width:22px}
+  .st-licznik.zielony{background:var(--jasnyziel);color:#14532d}
+  .st-tytul{font-size:1.25rem;font-weight:700;color:var(--granat)}
+  .st-tytul code{background:var(--jasny);padding:1px 8px;border-radius:6px;font-size:1.05rem}
+  .st-opis{margin:0;font-size:1rem;color:var(--szary)}
+  .st-opis b{color:#0f172a}
+
+  .st-nawigacja{
+    display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+    margin:16px 0 10px;padding-top:12px;border-top:2px solid var(--linia);
+  }
+  .st-nawigacja button{
+    font:inherit;font-weight:700;cursor:pointer;border-radius:10px;
+    padding:9px 16px;border:2px solid var(--granat);
+    background:var(--granat);color:#fff;transition:filter .15s,opacity .15s;
+  }
+  .st-nawigacja button.jasny{background:#fff;color:var(--granat)}
+  .st-nawigacja button:hover:not(:disabled){filter:brightness(1.15)}
+  .st-nawigacja button:disabled{opacity:.35;cursor:not-allowed}
+  .st-kropki{display:flex;gap:7px;margin-left:auto;flex-wrap:wrap}
+  .st-kropki button{
+    width:30px;height:30px;padding:0;border-radius:50%;
+    border:2px solid var(--linia);background:#fff;color:var(--szary);
+    font-size:.85rem;font-weight:700;
+  }
+  .st-kropki button.akt{background:var(--niebieski);border-color:var(--niebieski);color:#fff}
+  .st-kropki button.przed{background:var(--jasny);border-color:var(--niebieski);color:var(--granat)}
+
+  .st-plansze{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start}
+  .st-blok{flex:1 1 420px;min-width:320px}
+  .st-blok > .tytul{
+    font-weight:700;color:var(--granat);margin-bottom:6px;font-size:1.05rem;
+    display:flex;align-items:center;gap:8px;
+  }
+  .st-blok > .tytul small{color:var(--szary);font-weight:400}
+  .st-tabela{overflow-x:auto;border-radius:12px;transition:box-shadow .3s}
+  table.st-dane{border-collapse:collapse;width:100%;font-size:.98rem;min-width:300px}
+  table.st-dane th,table.st-dane td{
+    border:1px solid var(--linia);padding:6px 10px;text-align:left;
+    transition:background-color .35s,color .35s,opacity .35s;
+  }
+  table.st-dane thead th{background:var(--jasny);color:var(--granat);font-weight:700}
+  table.st-dane .null{color:#94a3b8;font-style:italic}
+
+  /* kolory grup — ten sam kolor w tabeli źródłowej i w tabeli grup */
+  table.st-dane tr.g1 td{background:#dbeafe!important}
+  table.st-dane tr.g2 td{background:#ffedd5!important}
+  table.st-dane tr.g3 td{background:#ede9fe!important}
+  table.st-dane tr.g1 td:first-child{box-shadow:inset 5px 0 0 var(--niebieski)}
+  table.st-dane tr.g2 td:first-child{box-shadow:inset 5px 0 0 var(--pomarancz)}
+  table.st-dane tr.g3 td:first-child{box-shadow:inset 5px 0 0 var(--fiolet)}
+
+  /* kolory kombinacji przy grupowaniu po dwóch kolumnach */
+  table.st-dane tr.c1 td{background:#dbeafe!important}
+  table.st-dane tr.c2 td{background:#cffafe!important}
+  table.st-dane tr.c3 td{background:#ffedd5!important}
+  table.st-dane tr.c4 td{background:#ede9fe!important}
+  table.st-dane tr.c5 td{background:#fce7f3!important}
+  table.st-dane tr.c1 td:first-child{box-shadow:inset 5px 0 0 #2563eb}
+  table.st-dane tr.c2 td:first-child{box-shadow:inset 5px 0 0 #0891b2}
+  table.st-dane tr.c3 td:first-child{box-shadow:inset 5px 0 0 #c2410c}
+  table.st-dane tr.c4 td:first-child{box-shadow:inset 5px 0 0 #6d28d9}
+  table.st-dane tr.c5 td:first-child{box-shadow:inset 5px 0 0 #be185d}
+  table.st-dane tr.widmo td{
+    background:#fff!important;border-style:dashed!important;
+    color:#94a3b8!important;font-style:italic;
+  }
+
+  table.st-dane tr.pasuje td{background:#eafbf0!important;color:#14532d!important}
+  table.st-dane tr.wynik td{background:var(--jasnyziel)!important;font-weight:600;color:#14532d!important}
+  table.st-dane tr.zle td{background:#fee2e2!important;color:#b91c1c!important;text-decoration:line-through}
+  table.st-dane tr.ciety td{background:#f1f5f9!important;color:#94a3b8!important;text-decoration:line-through}
+  table.st-dane td.zle,table.st-dane th.zle{
+    background:#fee2e2!important;color:#b91c1c!important;text-decoration:line-through;opacity:.8;
+  }
+  table.st-dane .ukryty{display:none}
+  table.st-dane tr.ukryty{display:none}
+  table.st-dane .badanie{box-shadow:inset 0 0 0 3px var(--niebieski)}
+  table.st-dane thead th.badanie{background:#bfdbfe}
+  table.st-dane td.liczba{font-family:"SF Mono",Menlo,Consolas,monospace}
+  table.st-dane td.swieza{animation:blysk .7s ease-out}
+  @keyframes blysk{
+    0%{background:#fde68a!important;transform:scale(1.04)}
+    100%{background:transparent;transform:scale(1)}
+  }
+  .st-tabela.gotowe{box-shadow:0 0 0 3px var(--zielony)}
+  .st-tabela.bonus{box-shadow:0 0 0 3px var(--pomarancz)}
+  .st-blok.przygaszony{opacity:.45;filter:saturate(.4)}
+  .st-blok[hidden]{display:none}
+
+  .st-blad{
+    margin-top:10px;background:#fee2e2;border:2px solid #dc2626;border-radius:12px;
+    padding:10px 14px;color:#991b1b;font-size:.98rem;
+  }
+  .st-blad code{background:#fecaca;padding:1px 6px;border-radius:5px}
+  .st-stopka{
+    margin-top:12px;background:var(--jasny);border-radius:10px;padding:8px 12px;
+    font-size:.95rem;color:var(--granat);
+  }
+  .st-alias .orig{display:none}
+  .st-alias .alias{display:inline}
+  .orig{display:inline}
+  .alias{display:none}
+
+  @media print{
+    body{background:#fff;padding:0;font-size:11.5pt}
+    .strona{max-width:none}
+    h1{font-size:22pt}
+    h2{font-size:15pt;margin-top:18pt;page-break-after:avoid}
+    h3{page-break-after:avoid}
+    .karta,.zoom,.uwaga,.kubelek,.zasada,.stepper{
+      break-inside:avoid;page-break-inside:avoid;box-shadow:none;
+    }
+    .szkielet{background:#fff;color:#000;border:1.5pt solid #000;padding:4pt 10pt}
+    .szkielet .wiersz{border-bottom:.5pt dashed #999;grid-template-columns:140pt 1fr;gap:10pt}
+    .szkielet .kw{color:#000;text-decoration:underline;font-size:12pt}
+    .szkielet .kw .opc{color:#666;text-decoration:none}
+    .szkielet .cm{color:#000;font-size:10.5pt}
+    .szkielet .cm b{color:#000}
+    .szkielet .cm em{color:#555}
+    .szkielet .nrw{background:#000;color:#fff}
+    .przelam{page-break-before:always}
+    .siatka{grid-template-columns:1fr 1fr}
+    .st-nawigacja,.st-kropki{display:none}
+    .st-kod{background:#fff;border:1pt solid #000}
+    .st-kod .lin,.st-kod .lin.akt{color:#000;background:#fff}
+  }
+</style>
+</head>
+<body>
+<div class="strona">
+
+  <h1>GROUP BY + HAVING</h1>
+  <p class="podtytul">
+    …czyli jak z <b>wielu wierszy</b> zrobić <b>jedno podsumowanie</b> — ściąga na zajęcia
+    (część 2, bez <code>JOIN</code> — cały czas jedna tabela)
+  </p>
+
+  <!-- ================= CZĘŚĆ 1: AGREGATY ================= -->
+  <h2><span class="nr">1</span> Rozgrzewka: funkcje agregujące</h2>
+  <p class="wstep">
+    Funkcja agregująca <b>zjada wiele wierszy i wypluwa jedną liczbę</b>.
+    Bez <code>GROUP BY</code> liczy dla <b>całej tabeli</b> — dlatego wynik ma dokładnie 1 wiersz.
+  </p>
+
+  <div class="siatka">
+
+    <div class="karta">
+      <h4><code>COUNT(*)</code> — ile wierszy</h4>
+      <p class="cel">Liczy <b>wiersze</b>, nie zagląda w wartości. <code>NULL</code> też się liczy.</p>
+<pre>SELECT COUNT(*) AS IluUczniow
+FROM uczniowie;</pre>
+      <div class="wynik"><b>Efekt:</b> jedna liczba, np. <code>10</code>.</div>
+    </div>
+
+    <div class="karta">
+      <h4><code>COUNT(kolumna)</code> — ile wypełnionych</h4>
+      <p class="cel">Liczy tylko wiersze, w których ta kolumna <b>nie jest NULL</b>.</p>
+<pre>SELECT COUNT(*)      AS Wszyscy,
+       COUNT(email)  AS MajaMail
+FROM uczniowie;</pre>
+      <div class="wynik"><b>Efekt:</b> <code>10</code> i <code>8</code> — różnica to liczba pustych maili.</div>
+    </div>
+
+    <div class="karta">
+      <h4><code>SUM</code> i <code>AVG</code> — suma i średnia</h4>
+      <p class="cel">Tylko na liczbach. <code>NULL</code> jest <b>pomijany</b>, a nie traktowany jak 0.</p>
+<pre>SELECT SUM(srednia) AS Razem,
+       AVG(srednia) AS Przecietnie
+FROM uczniowie;</pre>
+      <div class="wynik"><b>Ładniej:</b> <code>ROUND(AVG(srednia), 2)</code> — dwie cyfry po kropce.</div>
+    </div>
+
+    <div class="karta">
+      <h4><code>MIN</code> i <code>MAX</code> — skrajne wartości</h4>
+      <p class="cel">Działają też na tekstach (alfabetycznie) i datach (najstarsza / najnowsza).</p>
+<pre>SELECT MIN(srednia) AS Najgorsza,
+       MAX(srednia) AS Najlepsza
+FROM uczniowie;</pre>
+      <div class="wynik zly"><b>Pułapka:</b> to <b>nie</b> pokaże, <i>kto</i> ma tę średnią — <code>MAX</code> zwraca samą liczbę.</div>
+    </div>
+
+    <div class="karta">
+      <h4><code>COUNT(DISTINCT …)</code> — ile różnych</h4>
+      <p class="cel">Liczy <b>unikalne</b> wartości, powtórki liczone raz.</p>
+<pre>SELECT COUNT(DISTINCT id_klasy) AS IleKlas
+FROM uczniowie;</pre>
+      <div class="wynik"><b>Efekt:</b> <code>3</code> — trzy różne klasy, choć uczniów jest 10.</div>
+    </div>
+
+    <div class="karta">
+      <h4>Agregat + <code>WHERE</code></h4>
+      <p class="cel"><code>WHERE</code> najpierw wybiera wiersze, agregat liczy dopiero to, co przeszło filtr.</p>
+<pre>SELECT COUNT(*) AS DobrzyUczniowie
+FROM uczniowie
+WHERE srednia &gt;= 4.0;</pre>
+      <div class="wynik"><b>Czytaj:</b> „policz wiersze, ale tylko te ze średnią od 4.0”.</div>
+    </div>
+
+  </div>
+
+  <div class="uwaga">
+    <h3>⚠️ Dwie rzeczy, o których trzeba pamiętać</h3>
+    <ul>
+      <li><b>Agregaty ignorują <code>NULL</code></b> — dlatego <code>AVG</code> dzieli przez liczbę
+        <i>wypełnionych</i> pól, nie przez wszystkie wiersze.</li>
+      <li><b>Nie wolno mieszać</b> agregatu ze zwykłą kolumną bez <code>GROUP BY</code>:
+        <code>SELECT imie, COUNT(*) FROM uczniowie;</code> to bezsens — jedna liczba i 10 imion nie
+        zmieszczą się w jednym wierszu.</li>
+    </ul>
+  </div>
+
+  <!-- ================= CZĘŚĆ 2: GROUP BY ================= -->
+  <h2 class="przelam"><span class="nr">2</span> <code>GROUP BY</code> — dzielimy tabelę na kubełki</h2>
+  <p class="wstep">
+    <code>GROUP BY kolumna</code> mówi: <b>„posypuj wiersze do kubełków według tej kolumny”</b>.
+    Potem każda funkcja agregująca liczy <b>osobno w każdym kubełku</b>, a w wyniku
+    <b>jeden kubełek = jeden wiersz</b>.
+  </p>
+
+  <div class="zoom">
+    <div style="font-weight:700;color:var(--granat);margin-bottom:8px">8 wierszy w tabeli <code>uczniowie</code></div>
+    <table class="dane">
+      <thead><tr><th>imie</th><th>id_klasy</th><th>rozszerzony</th><th>srednia</th></tr></thead>
+      <tbody>
+        <tr><td>Bartosz</td><td>1</td><td>T</td><td>3.80</td></tr>
+        <tr><td>Ewa</td><td>1</td><td>N</td><td>3.20</td></tr>
+        <tr><td>Hubert</td><td>1</td><td>N</td><td>3.55</td></tr>
+        <tr><td>Gabriela</td><td>2</td><td>T</td><td>4.80</td></tr>
+        <tr><td>Anna</td><td>3</td><td>T</td><td>4.35</td></tr>
+        <tr><td>Celina</td><td>3</td><td>T</td><td>5.10</td></tr>
+        <tr><td>Filip</td><td>3</td><td>N</td><td>4.05</td></tr>
+        <tr><td>Jakub</td><td>3</td><td>T</td><td>3.45</td></tr>
+      </tbody>
+    </table>
+    <p style="margin:10px 0 0;font-size:.95rem;color:var(--szary)">
+      Kolumna <code>rozszerzony</code> mówi, czy uczeń chodzi na rozszerzenie (<code>T</code>/<code>N</code>).
+      Zaraz pogrupujemy te same 8 wierszy dwa razy: <b>raz po jednej kolumnie, raz po dwóch</b>.
+    </p>
+  </div>
+
+  <h3>Wariant A — <code>GROUP BY id_klasy</code> (jedna kolumna)</h3>
+
+  <div class="strzalka">↓ <span style="font-size:1rem;font-family:monospace">GROUP BY id_klasy</span> ↓</div>
+
+  <div class="kubelki">
+    <div class="kubelek k1">
+      <span class="naglowek">🪣 id_klasy = 1</span>
+      <span class="zeton">Bartosz — 3.80</span>
+      <span class="zeton">Ewa — 3.20</span>
+      <span class="zeton">Hubert — 3.55</span>
+      <div class="agregat">COUNT(*) = 3<br>AVG(srednia) = 3.52</div>
+    </div>
+    <div class="kubelek k2">
+      <span class="naglowek">🪣 id_klasy = 2</span>
+      <span class="zeton">Gabriela — 4.80</span>
+      <div class="agregat">COUNT(*) = 1<br>AVG(srednia) = 4.80</div>
+    </div>
+    <div class="kubelek k3">
+      <span class="naglowek">🪣 id_klasy = 3</span>
+      <span class="zeton">Anna — 4.35</span>
+      <span class="zeton">Celina — 5.10</span>
+      <span class="zeton">Filip — 4.05</span>
+      <span class="zeton">Jakub — 3.45</span>
+      <div class="agregat">COUNT(*) = 4<br>AVG(srednia) = 4.24</div>
+    </div>
+  </div>
+
+  <div class="strzalka">↓ wynik: <b>3 wiersze</b>, bo były 3 kubełki ↓</div>
+
+  <div class="zoom">
+    <table class="dane">
+      <thead><tr><th>id_klasy</th><th>Ilu</th><th>SredniaKlasy</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td class="agr">3</td><td class="agr">3.52</td></tr>
+        <tr><td>2</td><td class="agr">1</td><td class="agr">4.80</td></tr>
+        <tr><td>3</td><td class="agr">4</td><td class="agr">4.24</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Wariant B — <code>GROUP BY id_klasy, rozszerzony</code> (dwie kolumny)</h3>
+  <p class="wstep">
+    Grupować można po <b>dowolnej liczbie kolumn</b> — wystarczy wypisać je po przecinku.
+    Kubełek powstaje wtedy dla każdej <b>kombinacji wartości</b>, więc grup jest <b>więcej</b>,
+    a każda jest <b>mniejsza</b>.
+  </p>
+
+  <div class="strzalka">↓ <span style="font-size:1rem;font-family:monospace">GROUP BY id_klasy, rozszerzony</span> ↓</div>
+
+  <div class="kubelki">
+    <div class="kubelek k1">
+      <span class="naglowek">🪣 1 + T</span>
+      <span class="zeton">Bartosz — 3.80</span>
+      <div class="agregat">COUNT(*) = 1</div>
+    </div>
+    <div class="kubelek k1">
+      <span class="naglowek">🪣 1 + N</span>
+      <span class="zeton">Ewa — 3.20</span>
+      <span class="zeton">Hubert — 3.55</span>
+      <div class="agregat">COUNT(*) = 2</div>
+    </div>
+    <div class="kubelek k2">
+      <span class="naglowek">🪣 2 + T</span>
+      <span class="zeton">Gabriela — 4.80</span>
+      <div class="agregat">COUNT(*) = 1</div>
+    </div>
+    <div class="kubelek k3">
+      <span class="naglowek">🪣 3 + T</span>
+      <span class="zeton">Anna — 4.35</span>
+      <span class="zeton">Celina — 5.10</span>
+      <span class="zeton">Jakub — 3.45</span>
+      <div class="agregat">COUNT(*) = 3</div>
+    </div>
+    <div class="kubelek k3">
+      <span class="naglowek">🪣 3 + N</span>
+      <span class="zeton">Filip — 4.05</span>
+      <div class="agregat">COUNT(*) = 1</div>
+    </div>
+  </div>
+
+  <div class="strzalka">↓ wynik: <b>5 wierszy</b>, bo było 5 kombinacji ↓</div>
+
+  <div class="zoom">
+    <table class="dane">
+      <thead><tr><th>id_klasy</th><th>rozszerzony</th><th>Ilu</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>T</td><td class="agr">1</td></tr>
+        <tr><td>1</td><td>N</td><td class="agr">2</td></tr>
+        <tr><td>2</td><td>T</td><td class="agr">1</td></tr>
+        <tr><td>3</td><td>T</td><td class="agr">3</td></tr>
+        <tr><td>3</td><td>N</td><td class="agr">1</td></tr>
+      </tbody>
+    </table>
+    <p style="margin:10px 0 0;font-size:.95rem;color:var(--szary)">
+      <b>Uwaga:</b> nie ma wiersza <code>2 + N</code>, bo w danych nie ma ucznia z klasy 2 bez rozszerzenia.
+      Kubełki powstają <b>tylko dla kombinacji, które faktycznie występują</b> — SQL nie dopisuje pustych grup.
+    </p>
+  </div>
+
+  <div class="zasada">
+    <h3>✅ Złota zasada <code>GROUP BY</code></h3>
+    <p>
+      W <code>SELECT</code> wolno wpisać <b>tylko</b>: kolumny wymienione w <code>GROUP BY</code>
+      <b>albo</b> kolumny schowane w funkcji agregującej. Nic innego.
+    </p>
+  </div>
+
+  <div class="siatka">
+
+    <div class="karta">
+      <h4>Podstawowy schemat</h4>
+      <p class="cel">Kolumna grupująca + agregaty. Prawie zawsze dodajemy <code>ORDER BY</code>.</p>
+<pre>SELECT id_klasy,                 -- po tym grupuję
+       COUNT(*) AS Ilu           -- liczę w kubełku
+FROM uczniowie
+GROUP BY id_klasy                -- kubełki po klasach
+ORDER BY Ilu DESC;               -- najliczniejsza klasa na górze</pre>
+      <div class="wynik"><b>Efekt:</b> tyle wierszy, ile jest różnych klas.</div>
+    </div>
+
+    <div class="karta">
+      <h4>Kilka agregatów naraz</h4>
+      <p class="cel">W jednym zapytaniu można policzyć ile, sumę, średnią i rekord grupy.</p>
+<pre>SELECT id_klasy,
+       COUNT(*)              AS Ilu,
+       ROUND(AVG(srednia),2) AS SredniaKlasy,
+       MAX(srednia)          AS NajlepszaWKlasie
+FROM uczniowie
+GROUP BY id_klasy;</pre>
+      <div class="wynik"><b>Efekt:</b> jeden wiersz na klasę, cztery kolumny statystyk.</div>
+    </div>
+
+    <div class="karta">
+      <h4><code>WHERE</code> + <code>GROUP BY</code></h4>
+      <p class="cel"><code>WHERE</code> wyrzuca wiersze <b>przed</b> sypaniem do kubełków — więc zmienia liczby w grupach.</p>
+<pre>SELECT id_klasy, COUNT(*) AS Ilu
+FROM uczniowie
+WHERE srednia IS NOT NULL        -- najpierw filtr wierszy
+GROUP BY id_klasy;               -- potem kubełki</pre>
+      <div class="wynik"><b>Uwaga:</b> uczeń bez średniej nie dolicza się do swojej klasy.</div>
+    </div>
+
+    <div class="karta">
+      <h4>Grupowanie po <b>dwóch</b> kolumnach</h4>
+      <p class="cel">Kolumny wypisujemy po przecinku. Kubełek = jedna <b>kombinacja</b> wartości.</p>
+<pre>SELECT id_klasy, rozszerzony,
+       COUNT(*) AS Ilu
+FROM uczniowie
+GROUP BY id_klasy, rozszerzony
+ORDER BY id_klasy, rozszerzony;</pre>
+      <div class="wynik"><b>Efekt:</b> z 3 grup robi się 5 (1+T, 1+N, 2+T, 3+T, 3+N) — <b>obie</b> kolumny muszą być w <code>SELECT</code>.</div>
+    </div>
+
+    <div class="karta">
+      <h4>Po ilu kolumnach można grupować?</h4>
+      <p class="cel">Po dowolnej liczbie — ale każda kolejna <b>rozdrabnia</b> grupy.</p>
+<pre>-- 3 kolumny grupujące
+SELECT id_klasy, rozszerzony, profil,
+       COUNT(*)     AS Ilu,
+       AVG(srednia) AS Srednia
+FROM uczniowie
+GROUP BY id_klasy, rozszerzony, profil;</pre>
+      <div class="wynik"><b>Zasada:</b> im więcej kolumn w <code>GROUP BY</code>, tym <b>więcej wierszy</b> w wyniku i mniej wierszy w każdej grupie.</div>
+    </div>
+
+    <div class="karta">
+      <h4>Grupowanie a <code>DISTINCT</code></h4>
+      <p class="cel">Samo „jakie są wartości” to <code>DISTINCT</code>. <code>GROUP BY</code> daje dodatkowo <b>liczby</b>.</p>
+<pre>SELECT DISTINCT id_klasy FROM uczniowie;
+
+SELECT id_klasy, COUNT(*) FROM uczniowie
+GROUP BY id_klasy;</pre>
+      <div class="wynik"><b>Efekt:</b> ta sama lista klas, ale drugie zapytanie mówi też <b>ilu</b> uczniów.</div>
+    </div>
+
+    <div class="karta">
+      <h4>Sortowanie po agregacie</h4>
+      <p class="cel">W <code>ORDER BY</code> <b>wolno</b> użyć aliasu z <code>SELECT</code> — bo sortowanie jest na końcu.</p>
+<pre>SELECT id_klasy, AVG(srednia) AS SredniaKlasy
+FROM uczniowie
+GROUP BY id_klasy
+ORDER BY SredniaKlasy DESC
+LIMIT 1;                         -- najlepsza klasa</pre>
+      <div class="wynik"><b>Zapamiętaj:</b> alias działa w <code>ORDER BY</code>, ale <b>nie</b> w <code>WHERE</code>.</div>
+    </div>
+
+  </div>
+
+  <!-- ================= CZĘŚĆ 3: HAVING ================= -->
+  <h2 class="przelam"><span class="nr">3</span> <code>HAVING</code> — filtr na <b>grupy</b></h2>
+  <p class="wstep">
+    <code>WHERE</code> pyta: „czy ten <b>wiersz</b> mnie interesuje?”.
+    <code>HAVING</code> pyta: „czy ten <b>cały kubełek</b> mnie interesuje?”.
+    Dlatego tylko w <code>HAVING</code> można postawić warunek na <code>COUNT</code>, <code>SUM</code> czy <code>AVG</code>.
+  </p>
+
+  <table class="porownanie">
+    <thead>
+      <tr><th style="width:190px"></th><th><code>WHERE</code></th><th><code>HAVING</code></th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th>Co filtruje?</th>
+        <td>pojedyncze <b>wiersze</b> tabeli</td>
+        <td>gotowe <b>grupy</b> (kubełki)</td>
+      </tr>
+      <tr>
+        <th>Kiedy działa?</th>
+        <td><b>przed</b> <code>GROUP BY</code></td>
+        <td><b>po</b> <code>GROUP BY</code> i po policzeniu agregatów</td>
+      </tr>
+      <tr>
+        <th>Wolno tam agregat?</th>
+        <td><b>NIE</b> — <code>WHERE COUNT(*) &gt; 3</code> to błąd</td>
+        <td><b>TAK</b> — <code>HAVING COUNT(*) &gt; 3</code> ✔</td>
+      </tr>
+      <tr>
+        <th>Przykład</th>
+        <td><code>WHERE srednia IS NOT NULL</code><br><small>odrzuć uczniów bez średniej</small></td>
+        <td><code>HAVING COUNT(*) &gt;= 3</code><br><small>odrzuć klasy mniejsze niż 3 osoby</small></td>
+      </tr>
+      <tr>
+        <th>Kolejność w zapisie</th>
+        <td>zaraz po <code>FROM</code></td>
+        <td>zaraz po <code>GROUP BY</code></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="siatka">
+
+    <div class="karta">
+      <h4><code>HAVING COUNT(*)</code> — odsiej małe grupy</h4>
+      <p class="cel">Klasy, w których jest co najmniej 3 uczniów.</p>
+<pre>SELECT id_klasy, COUNT(*) AS Ilu
+FROM uczniowie
+GROUP BY id_klasy
+HAVING COUNT(*) &gt;= 3;</pre>
+      <div class="wynik"><b>Efekt:</b> grupa z jednym uczniem wypada z wyniku.</div>
+    </div>
+
+    <div class="karta">
+      <h4><code>HAVING</code> na sumie / średniej</h4>
+      <p class="cel">Warunek liczony na całym kubełku, nie na jednym uczniu.</p>
+<pre>SELECT id_klasy, AVG(srednia) AS SredniaKlasy
+FROM uczniowie
+GROUP BY id_klasy
+HAVING AVG(srednia) &gt; 4.0;</pre>
+      <div class="wynik"><b>Czytaj:</b> „pokaż klasy, których <b>średnia klasowa</b> przekracza 4.0”.</div>
+    </div>
+
+    <div class="karta">
+      <h4><code>HAVING</code> po aliasie</h4>
+      <p class="cel">W MySQL/MariaDB alias z <code>SELECT</code> działa w <code>HAVING</code> — krócej się pisze.</p>
+<pre>SELECT id_klasy, COUNT(*) AS Ilu
+FROM uczniowie
+GROUP BY id_klasy
+HAVING Ilu &gt;= 3;</pre>
+      <div class="wynik"><b>Uwaga:</b> na egzaminie bezpieczniej powtórzyć <code>HAVING COUNT(*) &gt;= 3</code>.</div>
+    </div>
+
+    <div class="karta">
+      <h4>Dwa warunki w <code>HAVING</code></h4>
+      <p class="cel">Można łączyć przez <code>AND</code> / <code>OR</code>, tak jak w <code>WHERE</code>.</p>
+<pre>SELECT id_klasy,
+       COUNT(*)     AS Ilu,
+       AVG(srednia) AS SredniaKlasy
+FROM uczniowie
+GROUP BY id_klasy
+HAVING COUNT(*) &gt;= 3
+   AND AVG(srednia) &gt; 3.5;</pre>
+      <div class="wynik"><b>Efekt:</b> klasa musi być <b>i</b> liczna, <b>i</b> dobra.</div>
+    </div>
+
+    <div class="karta">
+      <h4><code>WHERE</code> i <code>HAVING</code> razem</h4>
+      <p class="cel">Dwa różne sita: jedno na wiersze, drugie na grupy. Oba w jednym zapytaniu.</p>
+<pre>SELECT id_klasy, COUNT(*) AS Ilu
+FROM uczniowie
+WHERE srednia IS NOT NULL   -- sito 1: wiersze
+GROUP BY id_klasy
+HAVING COUNT(*) &gt;= 3;       -- sito 2: grupy</pre>
+      <div class="wynik"><b>Zapamiętaj:</b> to nie konkurenci — normalnie występują razem.</div>
+    </div>
+
+    <div class="karta">
+      <h4>Tak samo na bazie <code>world</code></h4>
+      <p class="cel">Ten sam schemat, inne dane — do zadań na tabeli <code>miasta</code>.</p>
+<pre>SELECT wojewodztwo,
+       COUNT(*)                  AS Miasta,
+       SUM(liczba_mieszkancow)   AS Ludnosc
+FROM miasta
+WHERE kod_kraju = 'POL'
+GROUP BY wojewodztwo
+HAVING COUNT(*) &gt; 2
+ORDER BY Ludnosc DESC;</pre>
+      <div class="wynik"><b>Czytaj:</b> „tylko polskie miasta → kubełki po województwach → tylko województwa z ponad 2 miastami”.</div>
+    </div>
+
+  </div>
+
+  <!-- ================= CZĘŚĆ 4: SZKIELET ================= -->
+  <h2 class="przelam"><span class="nr">4</span> Pełny szkielet zapytania</h2>
+  <p class="wstep">
+    Numerki po lewej to <b>kolejność wykonywania</b> przez serwer — inna niż kolejność pisania!
+    Klauzule piszemy dokładnie w tej kolejności, w jakiej leżą linijki poniżej.
+  </p>
+
+  <div class="szkielet">
+    <div class="wiersz">
+      <span class="kw"><span class="nrw">5</span>SELECT</span>
+      <span class="cm"><b>Które kolumny i agregaty</b> pokazać?<em>tylko kolumny z GROUP BY albo w funkcji agregującej · tu nadaję aliasy <code>AS</code></em></span>
+    </div>
+    <div class="wiersz">
+      <span class="kw"><span class="nrw">1</span>FROM</span>
+      <span class="cm"><b>Z której tabeli</b>?<em>np. <code>uczniowie</code>, <code>miasta</code></em></span>
+    </div>
+    <div class="wiersz">
+      <span class="kw"><span class="nrw">2</span>WHERE<span class="opc">nieobowiązkowe</span></span>
+      <span class="cm"><b>Które wiersze</b> wpuścić do grupowania?<em>filtr WIERSZY — nie wolno tu agregatów ani aliasów</em></span>
+    </div>
+    <div class="wiersz">
+      <span class="kw"><span class="nrw">3</span>GROUP BY<span class="opc">nieobowiązkowe</span></span>
+      <span class="cm"><b>Po czym sypać do kubełków?</b><em>tu powstają grupy i liczą się <code>COUNT</code>, <code>SUM</code>, <code>AVG</code>, <code>MIN</code>, <code>MAX</code></em></span>
+    </div>
+    <div class="wiersz">
+      <span class="kw"><span class="nrw">4</span>HAVING<span class="opc">tylko z GROUP BY</span></span>
+      <span class="cm"><b>Które grupy</b> zostają?<em>filtr GRUP — tutaj wolno warunek na agregacie</em></span>
+    </div>
+    <div class="wiersz">
+      <span class="kw"><span class="nrw">6</span>ORDER BY<span class="opc">nieobowiązkowe</span></span>
+      <span class="cm"><b>Jak posortować</b> gotowe wiersze?<em>tu alias z <code>SELECT</code> już działa · <code>DESC</code> = malejąco</em></span>
+    </div>
+    <div class="wiersz">
+      <span class="kw"><span class="nrw">7</span>LIMIT<span class="opc">nieobowiązkowe</span></span>
+      <span class="cm"><b>Ile wierszy</b> zostawić?<em>np. <code>LIMIT 5</code> — pięć najlepszych grup</em></span>
+    </div>
+    <div class="wiersz">
+      <span class="kw">;</span>
+      <span class="cm"><b>Koniec zapytania.</b><em>średnik zawsze na samym końcu</em></span>
+    </div>
+  </div>
+
+  <div class="uwaga">
+    <h3>⚠️ Najczęstsze błędy</h3>
+    <ul>
+      <li><code>WHERE COUNT(*) &gt; 3</code> → błąd <code>#1111 Invalid use of group function</code>.
+        Warunek na agregacie zawsze idzie do <code>HAVING</code>.</li>
+      <li><code>SELECT imie, COUNT(*) … GROUP BY id_klasy</code> → <code>imie</code> nie jest ani w
+        <code>GROUP BY</code>, ani w agregacie. MySQL pokaże losowe imię z grupy albo błąd — <b>nie rób tego</b>.</li>
+      <li>Grupujesz po dwóch kolumnach, a w <code>SELECT</code> wpisujesz tylko jedną —
+        wynik jest wtedy nieczytelny (nie wiadomo, której kombinacji dotyczy liczba).
+        Zasada: <b>wszystkie kolumny z <code>GROUP BY</code> pokaż też w <code>SELECT</code></b>.</li>
+      <li><code>HAVING</code> <b>bez</b> <code>GROUP BY</code> — działa, ale filtruje całą tabelę jako jedną grupę.
+        Prawie zawsze to pomyłka zamiast <code>WHERE</code>.</li>
+      <li>Zła kolejność: <code>GROUP BY</code> <b>przed</b> <code>WHERE</code> albo
+        <code>ORDER BY</code> przed <code>HAVING</code> → czerwony błąd składni.</li>
+      <li><code>AVG(srednia)</code> na kolumnie z <code>NULL</code> — pamiętaj, że puste pola są pomijane,
+        więc mianownik jest mniejszy, niż myślisz.</li>
+      <li>Brak <code>ORDER BY</code> przy <code>LIMIT</code> — „pierwsze 5 grup” bez sortowania to loteria.</li>
+    </ul>
+  </div>
+
+  <div class="stop">
+    <b>Tu się zatrzymujemy.</b><br>
+    Łączenie dwóch tabel (<code>JOIN</code>) — na kolejnych lekcjach.
+  </div>
+
+  <!-- ================= CZĘŚĆ 5: STEPPER ================= -->
+  <h2 class="przelam"><span class="nr">5</span> Klatka po klatce: <code>GROUP BY</code> i <code>HAVING</code> w akcji</h2>
+  <p class="wstep">
+    Ta sama tabela <code>uczniowie</code> (10 wierszy) co w pierwszej ściądze. Klikaj <b>Dalej →</b>
+    i patrz, jak wiersze zsypują się do kubełków, jak liczą się agregaty i dlaczego najlepsza uczennica
+    wypada z wyniku. (Możesz też używać strzałek ← → na klawiaturze.)
+  </p>
+
+  <div class="stepper" id="stepper" tabindex="0">
+
+    <div class="st-gora">
+      <div class="st-kod" id="stKod1">
+        <span class="lin" data-lin="s1">SELECT id_klasy,</span>
+        <span class="lin" data-lin="s2">       COUNT(*)              AS Ilu,</span>
+        <span class="lin" data-lin="s3">       ROUND(AVG(srednia),2) AS SredniaKlasy</span>
+        <span class="lin" data-lin="from">FROM uczniowie</span>
+        <span class="lin" data-lin="where">WHERE srednia IS NOT NULL</span>
+        <span class="lin" data-lin="group">GROUP BY id_klasy</span>
+        <span class="lin" data-lin="having">HAVING COUNT(*) &gt;= 3</span>
+        <span class="lin" data-lin="order">ORDER BY SredniaKlasy DESC;</span>
+      </div>
+
+      <div class="st-kod st-kod-bonus" id="stKod2" hidden>
+        <span class="lin" data-lin="bs">SELECT id_klasy, COUNT(*) AS Ilu</span>
+        <span class="lin" data-lin="bfrom">FROM uczniowie</span>
+        <span class="lin" data-lin="bwhere">WHERE COUNT(*) &gt;= 3</span>
+        <span class="lin" data-lin="bgroup">GROUP BY id_klasy;</span>
+        <span class="lin" data-lin="bkom">-- ❌ warunek na agregacie w WHERE</span>
+      </div>
+
+      <div class="st-panel">
+        <div class="st-liczniki">
+          <div class="st-licznik">wiersze: <span id="stWiersze">10</span></div>
+          <div class="st-licznik">grupy: <span id="stGrupy">–</span></div>
+          <div class="st-licznik zielony" id="stEtap">krok 0 / 9</div>
+        </div>
+        <div class="st-tytul" id="stTytul">Zapytanie wpada do serwera</div>
+        <p class="st-opis" id="stOpis">Opis kroku.</p>
+      </div>
+    </div>
+
+    <div class="st-nawigacja">
+      <button type="button" class="jasny" id="stWstecz">← Wstecz</button>
+      <button type="button" id="stDalej">Dalej →</button>
+      <button type="button" class="jasny" id="stAuto">▶ Odtwórz</button>
+      <button type="button" class="jasny" id="stReset">↺ Od nowa</button>
+      <div class="st-kropki" id="stKropki"></div>
+    </div>
+
+    <div class="st-plansze">
+
+      <div class="st-blok" id="stBlokZ">
+        <div class="tytul">📋 Tabela <code>uczniowie</code> <small>— dane wejściowe</small></div>
+        <div class="st-tabela" id="stTabelaZ">
+          <table class="st-dane" id="stTabZ">
+            <thead>
+              <tr>
+                <th data-kol="id">id</th>
+                <th data-kol="imie">imie</th>
+                <th data-kol="nazwisko">nazwisko</th>
+                <th data-kol="id_klasy">id_klasy</th>
+                <th data-kol="rozszerzony">rozszerzony</th>
+                <th data-kol="srednia">srednia</th>
+              </tr>
+            </thead>
+            <tbody id="stBody">
+              <tr data-id="1"><td>1</td><td>Anna</td><td>Kowalska</td><td data-kol="id_klasy">3</td><td data-kol="rozszerzony">T</td><td data-kol="srednia">4.35</td></tr>
+              <tr data-id="2"><td>2</td><td>Bartosz</td><td>Nowak</td><td data-kol="id_klasy">1</td><td data-kol="rozszerzony">T</td><td data-kol="srednia">3.80</td></tr>
+              <tr data-id="3"><td>3</td><td>Celina</td><td>Wójcik</td><td data-kol="id_klasy">3</td><td data-kol="rozszerzony">T</td><td data-kol="srednia">5.10</td></tr>
+              <tr data-id="4"><td>4</td><td>Damian</td><td>Zieliński</td><td data-kol="id_klasy">2</td><td data-kol="rozszerzony">N</td><td data-kol="srednia" class="null">NULL</td></tr>
+              <tr data-id="5"><td>5</td><td>Ewa</td><td>Lewandowska</td><td data-kol="id_klasy">1</td><td data-kol="rozszerzony">N</td><td data-kol="srednia">3.20</td></tr>
+              <tr data-id="6"><td>6</td><td>Filip</td><td>Szymański</td><td data-kol="id_klasy">3</td><td data-kol="rozszerzony">N</td><td data-kol="srednia">4.05</td></tr>
+              <tr data-id="7"><td>7</td><td>Gabriela</td><td>Dąbrowska</td><td data-kol="id_klasy">2</td><td data-kol="rozszerzony">T</td><td data-kol="srednia">4.80</td></tr>
+              <tr data-id="8"><td>8</td><td>Hubert</td><td>Kamiński</td><td data-kol="id_klasy">1</td><td data-kol="rozszerzony">N</td><td data-kol="srednia">3.55</td></tr>
+              <tr data-id="9"><td>9</td><td>Iwona</td><td>Mazur</td><td data-kol="id_klasy">2</td><td data-kol="rozszerzony">T</td><td data-kol="srednia" class="null">NULL</td></tr>
+              <tr data-id="10"><td>10</td><td>Jakub</td><td>Piotrowski</td><td data-kol="id_klasy">3</td><td data-kol="rozszerzony">T</td><td data-kol="srednia">3.45</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="st-blok" id="stBlokG" hidden>
+        <div class="tytul">🪣 Kubełki i wynik <small>— jeden wiersz na grupę</small></div>
+        <div class="st-tabela" id="stTabelaG">
+          <table class="st-dane" id="stTabG">
+            <thead>
+              <tr>
+                <th>id_klasy</th>
+                <th><span class="orig">COUNT(*)</span><span class="alias">Ilu</span></th>
+                <th><span class="orig">AVG(srednia)</span><span class="alias">SredniaKlasy</span></th>
+              </tr>
+            </thead>
+            <tbody id="stBodyG">
+              <tr data-g="1" class="g1">
+                <td>1</td>
+                <td class="liczba" data-ile="3">?</td>
+                <td class="liczba" data-sur="3.516667" data-zaokr="3.52">?</td>
+              </tr>
+              <tr data-g="2" class="g2">
+                <td>2</td>
+                <td class="liczba" data-ile="1">?</td>
+                <td class="liczba" data-sur="4.800000" data-zaokr="4.80">?</td>
+              </tr>
+              <tr data-g="3" class="g3">
+                <td>3</td>
+                <td class="liczba" data-ile="4">?</td>
+                <td class="liczba" data-sur="4.237500" data-zaokr="4.24">?</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="st-blad" id="stBlad" hidden>
+          <b>MySQL odpowiada błędem:</b>
+          <code>#1111 - Invalid use of group function</code><br>
+          Serwer nie zna jeszcze wyniku <code>COUNT(*)</code>, gdy wykonuje <code>WHERE</code> —
+          grupy powstają dopiero później.
+        </div>
+      </div>
+
+    </div>
+
+    <div class="st-stopka" id="stStopka">
+      Kolejność <b>wykonywania</b>:
+      <code>FROM</code> → <code>WHERE</code> → <code>GROUP BY</code> → agregaty →
+      <code>HAVING</code> → <code>SELECT</code> → <code>ORDER BY</code>.
+    </div>
+  </div>
+
+<script>
+(function(){
+  var WSZ_ID   = [1,2,3,4,5,6,7,8,9,10];
+  var BEZ_SRED = [4,9];                    // srednia IS NULL → wypada w WHERE
+  var GRUPY    = {1:[2,5,8], 2:[7], 3:[1,3,6,10]};
+  var PO_GRUP  = [2,5,8,7,1,3,6,10,4,9];   // wiersze zsypane po kubełkach
+
+  // pasuje = przeszedł filtr (zielony), zle = odpada (czerwony), ciety = grupa odrzucona (szary),
+  // ukryty = już wyrzucony, wynik = wiersz finalny, g1/g2/g3 = kolor kubełka
+  var KROKI = [
+    {
+      lin:[], wiersze:10, grupy:'–',
+      tytul:'Serwer dostaje zapytanie',
+      opis:'Tabela <b>uczniowie</b>: 10 wierszy. Zapytanie ma aż 6 klauzul, ale serwer wykona je <b>w swojej kolejności</b> — nie od góry do dołu. Tabela kubełków jest jeszcze pusta.'
+    },
+    {
+      lin:['from'], wiersze:10, grupy:'–',
+      tytul:'<code>FROM uczniowie</code> — biorę tabelę',
+      opis:'Start: serwer otwiera tabelę i ma na wejściu <b>wszystkie 10 wierszy</b>. Nic jeszcze nie jest ani odfiltrowane, ani pogrupowane.'
+    },
+    {
+      lin:['where'], badanie:['srednia'], zle:[4,9], pasuje:[1,2,3,5,6,7,8,10],
+      wiersze:8, grupy:'–',
+      tytul:'<code>WHERE srednia IS NOT NULL</code> — sito na wiersze',
+      opis:'Filtr wierszy działa <b>przed</b> grupowaniem. Damian i Iwona nie mają średniej, więc wypadają — i <b>nie doliczą się do swoich klas</b>. Zostaje 8 wierszy.'
+    },
+    {
+      lin:['group'], badanie:['id_klasy'], ukryty:[4,9], order:'grupy', grupyWidok:true, kolory:true,
+      wiersze:8, grupy:3,
+      tytul:'<code>GROUP BY id_klasy</code> — sypię do kubełków',
+      opis:'Wiersze ustawiają się kolorami według <b>id_klasy</b>: 🔵 klasa 1 (3 osoby), 🟠 klasa 2 (1 osoba), 🟣 klasa 3 (4 osoby). Po prawej powstają <b>3 grupy = 3 przyszłe wiersze wyniku</b>. Liczb jeszcze nie ma.'
+    },
+    {
+      lin:['s2','s3'], ukryty:[4,9], order:'grupy', grupyWidok:true, kolory:true, wartosci:'sur', swieze:true,
+      wiersze:8, grupy:3,
+      tytul:'Agregaty liczą się <b>w każdym kubełku osobno</b>',
+      opis:'<code>COUNT(*)</code> liczy wiersze w kubełku, <code>AVG(srednia)</code> — średnią z kubełka. Klasa 1: 3 osoby i 3.516667, klasa 2: 1 osoba i 4.8, klasa 3: 4 osoby i 4.2375. <b>8 wierszy zamieniło się w 3.</b>'
+    },
+    {
+      lin:['having'], ukryty:[4,9], ciety:[7], order:'grupy', grupyWidok:true, kolory:true, wartosci:'sur',
+      zleGrupy:[2], wiersze:8, grupy:2,
+      tytul:'<code>HAVING COUNT(*) &gt;= 3</code> — sito na grupy',
+      opis:'Teraz filtrujemy <b>całe kubełki</b>. Klasa 2 ma tylko 1 osobę, więc cała grupa wylatuje — <b>razem z Gabrielą, która miała najwyższą średnią 4.80</b>. To właśnie różnica: <code>WHERE</code> patrzy na ucznia, <code>HAVING</code> na klasę.'
+    },
+    {
+      lin:['s1','s2','s3'], ukryty:[4,7,9], order:'grupy', grupyWidok:true, kolory:true,
+      wartosci:'zaokr', alias:true, ukryteGrupy:[2], swieze:true, wiersze:8, grupy:2,
+      tytul:'<code>SELECT</code> — kolumny, <code>ROUND</code> i aliasy',
+      opis:'Dopiero teraz serwer buduje wynik: zostawia <b>id_klasy</b> (bo jest w <code>GROUP BY</code>) i <b>dwa agregaty</b>, zaokrągla je przez <code>ROUND(...,2)</code> i podpisuje nagłówki aliasami <code>Ilu</code> i <code>SredniaKlasy</code>.'
+    },
+    {
+      lin:['order'], ukryty:[4,7,9], order:'grupy', grupyWidok:true, kolory:true,
+      wartosci:'zaokr', alias:true, ukryteGrupy:[2], sortGrupy:[3,1], wiersze:8, grupy:2,
+      tytul:'<code>ORDER BY SredniaKlasy DESC</code> — sortuję grupy',
+      opis:'Sortujemy <b>gotowe wiersze wyniku</b>, więc wolno tu użyć aliasu. Klasa 3 (4.24) przeskakuje nad klasę 1 (3.52). Nic już nie ginie — tylko zmienia kolejność.'
+    },
+    {
+      lin:[], ukryty:[4,7,9], order:'grupy', grupyWidok:true, kolory:true, wartosci:'zaokr', alias:true,
+      ukryteGrupy:[2], sortGrupy:[3,1], koniec:true, wiersze:8, grupy:2,
+      tytul:'✅ To widzę w phpMyAdmin',
+      opis:'Gotowa odpowiedź: <b>2 wiersze</b> — po jednym na klasę, która przeszła <code>HAVING</code>. Z 10 uczniów zostało 2 wiersze podsumowania, a tabela w bazie jest <b>nietknięta</b>.'
+    },
+    {
+      lin:['bwhere'], bonus:true, grupyWidok:true, ukryteGrupy:[1,2,3],
+      wartosci:'brak', blad:true, wiersze:10, grupy:'❌',
+      tytul:'🧨 Bonus: dlaczego nie <code>WHERE COUNT(*)</code>?',
+      opis:'Ktoś wpisał warunek na agregacie do <code>WHERE</code>. Serwer wykonuje <code>WHERE</code> <b>zanim</b> powstaną kubełki, więc w tym momencie <code>COUNT(*)</code> <b>jeszcze nie istnieje</b> — dostajemy błąd, a nie wynik. Warunek na <code>COUNT</code>, <code>SUM</code>, <code>AVG</code> zawsze idzie do <code>HAVING</code>.'
+    }
+  ];
+
+  var stepper = document.getElementById('stepper');
+  if(!stepper) return;
+  var tbodyZ  = document.getElementById('stBody');
+  var tbodyG  = document.getElementById('stBodyG');
+  var tabZ    = document.getElementById('stTabZ');
+  var tabG    = document.getElementById('stTabG');
+  var blokZ   = document.getElementById('stBlokZ');
+  var blokG   = document.getElementById('stBlokG');
+  var tabelaG = document.getElementById('stTabelaG');
+  var blad    = document.getElementById('stBlad');
+  var kropki  = document.getElementById('stKropki');
+  var btnD    = document.getElementById('stDalej');
+  var btnW    = document.getElementById('stWstecz');
+  var btnAuto = document.getElementById('stAuto');
+  var kod1    = document.getElementById('stKod1');
+  var kod2    = document.getElementById('stKod2');
+  var stopka  = document.getElementById('stStopka');
+  var wiersze = {}, grupy = {};
+  var krok = 0, timer = null;
+
+  Array.prototype.forEach.call(tbodyZ.rows, function(tr){ wiersze[tr.dataset.id] = tr; });
+  Array.prototype.forEach.call(tbodyG.rows, function(tr){ grupy[tr.dataset.g] = tr; });
+
+  KROKI.forEach(function(k,i){
+    var b = document.createElement('button');
+    b.type = 'button'; b.textContent = i;
+    b.title = 'Krok ' + i;
+    b.setAttribute('aria-label', 'Krok ' + i);
+    b.addEventListener('click', function(){ stop(); idz(i); });
+    kropki.appendChild(b);
+  });
+
+  function ma(lista, x){ return !!lista && lista.indexOf(x) > -1; }
+  function grupaWiersza(id){
+    for(var g in GRUPY){ if(GRUPY[g].indexOf(id) > -1) return g; }
+    return null;
+  }
+
+  function pozycje(tbody){
+    var p = {};
+    Array.prototype.forEach.call(tbody.rows, function(tr){
+      p[tr.dataset.id || tr.dataset.g] = tr.getBoundingClientRect().top;
+    });
+    return p;
+  }
+  function flip(tbody, przed){
+    Array.prototype.forEach.call(tbody.rows, function(tr){
+      var klucz = tr.dataset.id || tr.dataset.g;
+      var stary = przed[klucz];
+      if(stary === undefined) return;
+      var delta = stary - tr.getBoundingClientRect().top;
+      if(!delta) return;
+      tr.style.transition = 'none';
+      tr.style.transform = 'translateY(' + delta + 'px)';
+      requestAnimationFrame(function(){
+        tr.style.transition = 'transform .5s cubic-bezier(.2,.8,.2,1)';
+        tr.style.transform = '';
+      });
+    });
+  }
+
+  function idz(i){
+    krok = Math.max(0, Math.min(KROKI.length - 1, i));
+    var k = KROKI[krok];
+
+    var przedZ = pozycje(tbodyZ), przedG = pozycje(tbodyG);
+
+    // --- tabela źródłowa: kolejność wierszy
+    var kolejnosc = k.order === 'grupy' ? PO_GRUP.slice() : WSZ_ID.slice();
+    WSZ_ID.forEach(function(id){ if(kolejnosc.indexOf(id) === -1) kolejnosc.push(id); });
+    kolejnosc.forEach(function(id){ tbodyZ.appendChild(wiersze[id]); });
+
+    // --- tabela źródłowa: stany wierszy
+    Array.prototype.forEach.call(tbodyZ.rows, function(tr){
+      var id = parseInt(tr.dataset.id, 10);
+      var klasy = [];
+      if(ma(k.ukryty, id))       klasy.push('ukryty');
+      else if(ma(k.zle, id))     klasy.push('zle');
+      else if(ma(k.ciety, id))   klasy.push('ciety');
+      else {
+        if(k.kolory){ var g = grupaWiersza(id); if(g) klasy.push('g' + g); }
+        else if(ma(k.pasuje, id)) klasy.push('pasuje');
+      }
+      tr.className = klasy.join(' ');
+    });
+
+    // --- podświetlenie badanej kolumny
+    ['id_klasy','srednia'].forEach(function(kol){
+      Array.prototype.forEach.call(tabZ.querySelectorAll('[data-kol="'+kol+'"]'), function(c){
+        c.classList.toggle('badanie', ma(k.badanie, kol));
+      });
+    });
+
+    // --- tabela grup: widoczność, kolejność, wartości
+    blokG.hidden = !k.grupyWidok;
+    blokZ.classList.toggle('przygaszony', !!k.koniec);
+    blad.hidden = !k.blad;
+    tabelaG.hidden = !!k.blad;
+
+    var kolG = (k.sortGrupy || [1,2,3]).slice();
+    [1,2,3].forEach(function(g){ if(kolG.indexOf(g) === -1) kolG.push(g); });
+    kolG.forEach(function(g){ tbodyG.appendChild(grupy[g]); });
+
+    Array.prototype.forEach.call(tbodyG.rows, function(tr){
+      var g = parseInt(tr.dataset.g, 10);
+      var klasy = ['g' + g];
+      if(ma(k.ukryteGrupy, g))   klasy = ['ukryty'];
+      else if(ma(k.zleGrupy, g)) klasy = ['zle'];
+      else if(k.koniec)          klasy = ['wynik'];
+      tr.className = klasy.join(' ');
+
+      Array.prototype.forEach.call(tr.querySelectorAll('td.liczba'), function(td){
+        var nowa;
+        if(k.wartosci === 'sur')        nowa = td.dataset.ile || td.dataset.sur;
+        else if(k.wartosci === 'zaokr') nowa = td.dataset.ile || td.dataset.zaokr;
+        else                            nowa = '?';
+        if(td.textContent !== nowa){
+          td.textContent = nowa;
+          if(k.swieze){
+            td.classList.remove('swieza');
+            void td.offsetWidth;
+            td.classList.add('swieza');
+          }
+        }
+      });
+    });
+
+    flip(tbodyZ, przedZ);
+    flip(tbodyG, przedG);
+
+    tabG.classList.toggle('st-alias', !!k.alias);
+    tabelaG.classList.toggle('gotowe', !!k.koniec);
+    tabelaG.classList.toggle('bonus', !!k.bonus);
+
+    kod1.hidden = !!k.bonus;
+    kod2.hidden = !k.bonus;
+    stopka.innerHTML = k.bonus
+      ? '<b>Zapamiętaj:</b> <code>WHERE</code> zna tylko pojedyncze wiersze, <code>HAVING</code> — gotowe grupy. Dlatego agregat w <code>WHERE</code> zawsze kończy się błędem.'
+      : 'Kolejność <b>wykonywania</b>: <code>FROM</code> → <code>WHERE</code> → <code>GROUP BY</code> → agregaty → <code>HAVING</code> → <code>SELECT</code> → <code>ORDER BY</code>.';
+
+    document.getElementById('stWiersze').textContent = k.wiersze;
+    document.getElementById('stGrupy').textContent = k.grupy;
+    document.getElementById('stEtap').textContent = 'krok ' + krok + ' / ' + (KROKI.length - 1);
+    document.getElementById('stTytul').innerHTML = k.tytul;
+    document.getElementById('stOpis').innerHTML = k.opis;
+
+    Array.prototype.forEach.call(stepper.querySelectorAll('.st-kod .lin'), function(l){
+      var aktywna = k.lin.indexOf(l.dataset.lin) > -1;
+      l.classList.toggle('akt', aktywna);
+      l.classList.toggle('zrobione', !aktywna && krok > 0);
+    });
+    Array.prototype.forEach.call(kropki.children, function(b, i2){
+      b.classList.toggle('akt', i2 === krok);
+      b.classList.toggle('przed', i2 < krok);
+    });
+
+    btnW.disabled = krok === 0;
+    btnD.disabled = krok === KROKI.length - 1;
+    if(btnD.disabled) stop();
+  }
+
+  function stop(){
+    if(timer){ clearInterval(timer); timer = null; btnAuto.textContent = '▶ Odtwórz'; }
+  }
+
+  btnD.addEventListener('click', function(){ stop(); idz(krok + 1); });
+  btnW.addEventListener('click', function(){ stop(); idz(krok - 1); });
+  document.getElementById('stReset').addEventListener('click', function(){ stop(); idz(0); });
+  btnAuto.addEventListener('click', function(){
+    if(timer){ stop(); return; }
+    if(krok === KROKI.length - 1) idz(0);
+    btnAuto.textContent = '⏸ Pauza';
+    timer = setInterval(function(){
+      if(krok >= KROKI.length - 1){ stop(); return; }
+      idz(krok + 1);
+    }, 2600);
+  });
+  stepper.addEventListener('keydown', function(e){
+    if(e.key === 'ArrowRight'){ e.preventDefault(); stop(); idz(krok + 1); }
+    if(e.key === 'ArrowLeft'){  e.preventDefault(); stop(); idz(krok - 1); }
+  });
+
+  idz(0);
+})();
+</script>
+
+  <!-- ================= CZĘŚĆ 6: STEPPER PORÓWNAWCZY ================= -->
+  <h2 class="przelam"><span class="nr">6</span> Jedna kolumna czy dwie? Stepper porównawczy</h2>
+  <p class="wstep">
+    Te same 8 wierszy (już po <code>WHERE</code>) pogrupowane dwa razy: najpierw po
+    <b>jednej</b> kolumnie, potem po <b>dwóch</b>. Zobacz, jak z 3 kubełków robi się 5
+    i dlaczego jedna kombinacja w ogóle się nie pojawia.
+  </p>
+
+  <div class="stepper" id="st2" tabindex="0">
+
+    <div class="st-gora">
+      <div class="st-kod" id="st2Kod"></div>
+      <div class="st-panel">
+        <div class="st-liczniki">
+          <div class="st-licznik">wiersze: <span id="st2Wiersze">8</span></div>
+          <div class="st-licznik">grupy: <span id="st2Grupy">–</span></div>
+          <div class="st-licznik zielony" id="st2Etap">krok 0 / 5</div>
+        </div>
+        <div class="st-tytul" id="st2Tytul"></div>
+        <p class="st-opis" id="st2Opis"></p>
+      </div>
+    </div>
+
+    <div class="st-nawigacja">
+      <button type="button" class="jasny" id="st2Wstecz">← Wstecz</button>
+      <button type="button" id="st2Dalej">Dalej →</button>
+      <button type="button" class="jasny" id="st2Auto">▶ Odtwórz</button>
+      <button type="button" class="jasny" id="st2Reset">↺ Od nowa</button>
+      <div class="st-kropki" id="st2Kropki"></div>
+    </div>
+
+    <div class="st-plansze">
+      <div class="st-blok">
+        <div class="tytul">📋 Uczniowie <small>— 8 wierszy po filtrze</small></div>
+        <div class="st-tabela"><table class="st-dane" id="st2TabZ"></table></div>
+      </div>
+      <div class="st-blok">
+        <div class="tytul" id="st2TytulG">🪣 Kubełki i wynik</div>
+        <div class="st-tabela" id="st2TabelaG"><table class="st-dane" id="st2TabG"></table></div>
+      </div>
+    </div>
+
+    <div class="st-stopka" id="st2Stopka"></div>
+  </div>
+
+<script>
+(function(){
+  var U = [
+    {im:'Bartosz',  naz:'Nowak',       k:1, r:'T', s:'3.80'},
+    {im:'Ewa',      naz:'Lewandowska', k:1, r:'N', s:'3.20'},
+    {im:'Hubert',   naz:'Kamiński',    k:1, r:'N', s:'3.55'},
+    {im:'Gabriela', naz:'Dąbrowska',   k:2, r:'T', s:'4.80'},
+    {im:'Anna',     naz:'Kowalska',    k:3, r:'T', s:'4.35'},
+    {im:'Celina',   naz:'Wójcik',      k:3, r:'T', s:'5.10'},
+    {im:'Jakub',    naz:'Piotrowski',  k:3, r:'T', s:'3.45'},
+    {im:'Filip',    naz:'Szymański',   k:3, r:'N', s:'4.05'}
+  ];
+  var KOLOR_KLASA = {1:'g1', 2:'g2', 3:'g3'};
+  var KOLOR_KOMBO = {'1-T':'c1', '1-N':'c2', '2-T':'c3', '3-T':'c4', '3-N':'c5'};
+
+  var KROKI = [
+    {
+      tryb:'brak', grupy:'–',
+      kod:[['-- 8 uczniów, którzy przeszli filtr', 0],
+           ['-- WHERE srednia IS NOT NULL', 0],
+           ['-- pytanie: po czym grupujemy?', 1]],
+      tytul:'Te same dane, dwa sposoby grupowania',
+      opis:'Po lewej 8 wierszy. Kolumna <b>id_klasy</b> ma 3 różne wartości, kolumna <b>rozszerzony</b> — 2 (<code>T</code> i <code>N</code>). Od tego, którą (albo które) wpiszemy do <code>GROUP BY</code>, zależy liczba wierszy w wyniku.'
+    },
+    {
+      tryb:'jedna', grupy:3,
+      kod:[['SELECT id_klasy, COUNT(*) AS Ilu', 0],
+           ['FROM uczniowie', 0],
+           ['GROUP BY id_klasy;', 1]],
+      tytul:'Wariant A: <code>GROUP BY id_klasy</code>',
+      opis:'Trzy kubełki, bo są trzy różne klasy: 🔵 klasa 1 (3 osoby), 🟠 klasa 2 (1 osoba), 🟣 klasa 3 (4 osoby). W wyniku <b>3 wiersze</b>.'
+    },
+    {
+      tryb:'dwie', grupy:5,
+      kod:[['SELECT id_klasy, rozszerzony, COUNT(*) AS Ilu', 0],
+           ['FROM uczniowie', 0],
+           ['GROUP BY id_klasy, rozszerzony;', 1]],
+      tytul:'Wariant B: <code>GROUP BY id_klasy, rozszerzony</code>',
+      opis:'Dopisaliśmy <b>jedną kolumnę po przecinku</b> — i kubełki rozpadły się na mniejsze. Teraz grupa to <b>para wartości</b>: klasa 1 dzieli się na 1+T i 1+N, klasa 3 na 3+T i 3+N. W wyniku <b>5 wierszy</b>, a obie kolumny grupujące muszą być w <code>SELECT</code>.'
+    },
+    {
+      tryb:'dwie', grupy:5, widmo:true,
+      kod:[['SELECT id_klasy, rozszerzony, COUNT(*) AS Ilu', 0],
+           ['FROM uczniowie', 0],
+           ['GROUP BY id_klasy, rozszerzony;', 1],
+           ['-- kombinacji 2 + N nie ma w danych', 1]],
+      tytul:'Dlaczego nie ma wiersza <code>2 + N</code>?',
+      opis:'Teoretycznie kombinacji jest 3 × 2 = 6, ale w wyniku jest 5. Brakuje <b>2 + N</b>, bo <b>żaden</b> uczeń z klasy 2 nie ma <code>rozszerzony = N</code> (Damian miał, ale wypadł na <code>WHERE</code>). <code>GROUP BY</code> tworzy kubełki <b>tylko z tego, co jest w danych</b> — nigdy nie dopisuje pustych grup z zerem.'
+    },
+    {
+      tryb:'dwie', grupy:2, having:2,
+      kod:[['SELECT id_klasy, rozszerzony, COUNT(*) AS Ilu', 0],
+           ['FROM uczniowie', 0],
+           ['GROUP BY id_klasy, rozszerzony', 0],
+           ['HAVING COUNT(*) >= 2;', 1]],
+      tytul:'<code>HAVING</code> działa tak samo przy dwóch kolumnach',
+      opis:'Filtr grup nie interesuje się tym, po ilu kolumnach grupowaliśmy — patrzy tylko na agregat. Grupy jednoosobowe (1+T, 2+T, 3+N) wylatują. Zostają <b>1+N</b> (2 osoby) i <b>3+T</b> (3 osoby).'
+    },
+    {
+      tryb:'dwie', grupy:2, having:2, koniec:true,
+      kod:[['SELECT id_klasy, rozszerzony, COUNT(*) AS Ilu', 0],
+           ['FROM uczniowie', 0],
+           ['GROUP BY id_klasy, rozszerzony', 0],
+           ['HAVING COUNT(*) >= 2', 0],
+           ['ORDER BY Ilu DESC;', 1]],
+      tytul:'✅ Wynik: 2 wiersze',
+      opis:'Podsumowanie całej sekcji: <b>1 kolumna w <code>GROUP BY</code> → 3 wiersze</b>, <b>2 kolumny → 5 wierszy</b>, a po <code>HAVING</code> zostają 2. Im więcej kolumn grupujących, tym więcej i drobniejszych grup.'
+    }
+  ];
+
+  var st2 = document.getElementById('st2');
+  if(!st2) return;
+  var tabZ = document.getElementById('st2TabZ');
+  var tabG = document.getElementById('st2TabG');
+  var tabelaG = document.getElementById('st2TabelaG');
+  var kod = document.getElementById('st2Kod');
+  var kropki = document.getElementById('st2Kropki');
+  var btnD = document.getElementById('st2Dalej');
+  var btnW = document.getElementById('st2Wstecz');
+  var btnAuto = document.getElementById('st2Auto');
+  var krok = 0, timer = null;
+
+  KROKI.forEach(function(k, i){
+    var b = document.createElement('button');
+    b.type = 'button'; b.textContent = i;
+    b.title = 'Krok ' + i;
+    b.setAttribute('aria-label', 'Krok ' + i);
+    b.addEventListener('click', function(){ stop(); idz(i); });
+    kropki.appendChild(b);
+  });
+
+  function klasaWiersza(u, tryb){
+    if(tryb === 'jedna') return KOLOR_KLASA[u.k];
+    if(tryb === 'dwie')  return KOLOR_KOMBO[u.k + '-' + u.r];
+    return '';
+  }
+
+  function grupyDlaTrybu(tryb){
+    var mapa = {}, lista = [];
+    U.forEach(function(u){
+      var klucz = tryb === 'jedna' ? String(u.k) : u.k + '-' + u.r;
+      if(!mapa[klucz]){
+        mapa[klucz] = {klucz:klucz, k:u.k, r:u.r, ile:0, kolor:klasaWiersza(u, tryb)};
+        lista.push(mapa[klucz]);
+      }
+      mapa[klucz].ile++;
+    });
+    return lista;
+  }
+
+  function idz(i){
+    krok = Math.max(0, Math.min(KROKI.length - 1, i));
+    var k = KROKI[krok];
+
+    // kod zapytania
+    kod.innerHTML = k.kod.map(function(l){
+      return '<span class="lin' + (l[1] ? ' akt' : ' zrobione') + '">' +
+        l[0].replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;') + '</span>';
+    }).join('');
+
+    // tabela źródłowa
+    var podswietl = k.tryb === 'jedna' ? [4] : (k.tryb === 'dwie' ? [4,5] : []);
+    var html = '<thead><tr><th>imie</th><th>nazwisko</th><th>srednia</th>' +
+      '<th' + (podswietl.indexOf(4) > -1 ? ' class="badanie"' : '') + '>id_klasy</th>' +
+      '<th' + (podswietl.indexOf(5) > -1 ? ' class="badanie"' : '') + '>rozszerzony</th></tr></thead><tbody>';
+    U.forEach(function(u){
+      html += '<tr class="' + klasaWiersza(u, k.tryb) + '">' +
+        '<td>' + u.im + '</td><td>' + u.naz + '</td><td>' + u.s + '</td>' +
+        '<td>' + u.k + '</td><td>' + u.r + '</td></tr>';
+    });
+    tabZ.innerHTML = html + '</tbody>';
+
+    // tabela grup
+    if(k.tryb === 'brak'){
+      tabG.innerHTML = '<thead><tr><th>?</th></tr></thead><tbody>' +
+        '<tr class="widmo"><td>tu pojawią się kubełki</td></tr></tbody>';
+    } else {
+      var dwie = k.tryb === 'dwie';
+      var g = '<thead><tr><th>id_klasy</th>' + (dwie ? '<th>rozszerzony</th>' : '') +
+        '<th>Ilu</th></tr></thead><tbody>';
+      var lista = grupyDlaTrybu(k.tryb);
+      if(k.having) lista.sort(function(a,b){ return b.ile - a.ile; });
+      lista.forEach(function(gr){
+        var kl = gr.kolor;
+        if(k.having && gr.ile < k.having) kl = k.koniec ? 'ukryty' : 'zle';
+        else if(k.koniec) kl = 'wynik';
+        g += '<tr class="' + kl + '"><td>' + gr.k + '</td>' +
+          (dwie ? '<td>' + gr.r + '</td>' : '') +
+          '<td class="liczba">' + gr.ile + '</td></tr>';
+      });
+      if(k.widmo){
+        g += '<tr class="widmo"><td>2</td><td>N</td><td>brak w danych</td></tr>';
+      }
+      tabG.innerHTML = g + '</tbody>';
+    }
+    tabelaG.classList.toggle('gotowe', !!k.koniec);
+
+    document.getElementById('st2Wiersze').textContent = 8;
+    document.getElementById('st2Grupy').textContent = k.grupy;
+    document.getElementById('st2Etap').textContent = 'krok ' + krok + ' / ' + (KROKI.length - 1);
+    document.getElementById('st2Tytul').innerHTML = k.tytul;
+    document.getElementById('st2Opis').innerHTML = k.opis;
+    document.getElementById('st2TytulG').innerHTML = k.tryb === 'dwie'
+      ? '🪣 Kubełki <small>— jeden wiersz na <b>parę</b> wartości</small>'
+      : '🪣 Kubełki <small>— jeden wiersz na grupę</small>';
+    document.getElementById('st2Stopka').innerHTML = k.tryb === 'dwie'
+      ? 'Kolumny grupujące wypisujemy po przecinku: <code>GROUP BY kolumna1, kolumna2</code> — i <b>obie</b> muszą znaleźć się w <code>SELECT</code>.'
+      : 'Liczba wierszy w wyniku = liczba grup. Każda dodatkowa kolumna w <code>GROUP BY</code> zwiększa tę liczbę.';
+
+    Array.prototype.forEach.call(kropki.children, function(b, i2){
+      b.classList.toggle('akt', i2 === krok);
+      b.classList.toggle('przed', i2 < krok);
+    });
+    btnW.disabled = krok === 0;
+    btnD.disabled = krok === KROKI.length - 1;
+    if(btnD.disabled) stop();
+  }
+
+  function stop(){
+    if(timer){ clearInterval(timer); timer = null; btnAuto.textContent = '▶ Odtwórz'; }
+  }
+
+  btnD.addEventListener('click', function(){ stop(); idz(krok + 1); });
+  btnW.addEventListener('click', function(){ stop(); idz(krok - 1); });
+  document.getElementById('st2Reset').addEventListener('click', function(){ stop(); idz(0); });
+  btnAuto.addEventListener('click', function(){
+    if(timer){ stop(); return; }
+    if(krok === KROKI.length - 1) idz(0);
+    btnAuto.textContent = '⏸ Pauza';
+    timer = setInterval(function(){
+      if(krok >= KROKI.length - 1){ stop(); return; }
+      idz(krok + 1);
+    }, 2600);
+  });
+  st2.addEventListener('keydown', function(e){
+    if(e.key === 'ArrowRight'){ e.preventDefault(); stop(); idz(krok + 1); }
+    if(e.key === 'ArrowLeft'){  e.preventDefault(); stop(); idz(krok - 1); }
+  });
+
+  idz(0);
+})();
+</script>
+
+</div>
+</body>
+</html>
